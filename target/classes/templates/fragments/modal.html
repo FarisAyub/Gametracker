@@ -1,0 +1,41 @@
+<div th:fragment="modal(method, showDelete, submitText)">
+  <div class="modal" id="gameModal" tabindex="-1" aria-labelledby="gameModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header no-pad">
+          <img id="modal-image" class="modal-image" alt="Could not load image" src="">
+        </div>
+        <div class="modal-body">
+          <h5 id="modal-title" class="modal-title text-center">Game</h5>
+          <form id="gameForm" action="#" method="post">
+            <input th:if="${method != null}" type="hidden" name="_method" th:value="${method}">
+            <input type="hidden" id="gameId" name="gameId">
+
+            <label for="rating">Rating</label>
+            <div class="input-group mb-3">
+              <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" maxlength="1" placeholder="1-5 stars" pattern="[1-5]{1}" required>
+              <span class="input-group-text" id="basic-addon2"><i class="fa-solid fa-star text-warning"></i></span>
+            </div>
+            <div class="form-group">
+              <label for="note">Note</label>
+              <textarea class="form-control" id="note" name="note" maxlength="255" rows="5" placeholder="Describe your experience with the game"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <div class="row w-100">
+            <div class="col-md-4">
+              <button type="button" class="btn btn-primary w-100" id="submitGameModal" th:text="${submitText}"></button>
+            </div>
+            <div class="col-md-4">
+              <button type="button" class="btn btn-danger w-100" id="removeGame" th:if="${showDelete}"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div class="col-md-4">
+              <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

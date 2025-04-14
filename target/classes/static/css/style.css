@@ -1,0 +1,125 @@
+/* Styling for body in all pages */
+body {
+    /*background-color: beige;*/
+    background: radial-gradient(circle, #C9C5B1 0%, #C9C5B1 80%);
+    font-family: 'Roboto', sans-serif; /* Font from google fonts */
+}
+
+/* Modified bootstrap styling for cards */
+.card {
+    cursor: pointer;
+    height: 350px;
+    overflow: hidden;
+    border: none;
+    transition: transform 0.3s ease-in-out; /* Make zoom transition smooth */
+    border-radius: 10px; /* Round the corners for a softer look */
+}
+
+/* Enlarge card and add a shadow when hovered over */
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for the image at top of card */
+.card img {
+    width: 100%;  /* Make the image width fill the entire card */
+    height: 200px;  /* Cropped height so that smaller image's don't look out of place */
+    object-fit: cover;  /* Image covers the area, prevents smaller icons from having gaps */
+    object-position: center;  /* Center image since it's cropped height */
+}
+
+/* Style body of cards */
+.card-body {
+    font-size: 14px;
+}
+
+/* Style for card title */
+.card-title {
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Scale height to fit content, used to resize cards */
+.csm {
+    height: max-content;
+}
+
+/* Styling for note and rating on user-games list */
+.game-info {
+    font-size: 0.9rem;
+    color: #777;
+    font-style: italic;
+}
+
+/* Make blue buttons darker on hover */
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Make red buttons darker on hover */
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Generic button styling */
+.btn {
+    font-weight: bold;
+    text-transform: capitalize;
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for hover */
+}
+
+/* Make sure the toast appears on page */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050; /* Ensure it's on top of other elements */
+    animation: fadeInUp 0.3s ease-out; /* Fade-in */
+}
+
+/* Styling for modal body */
+.modal-body {
+    padding: 20px;
+}
+
+/* Styling for modals */
+.modal-content {
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal input styling */
+.modal input, .modal textarea {
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+/* Changes modal inputs border to red when invalid value, used for rating */
+.modal input:invalid, .modal textarea:invalid {
+    border-color: #DD2C00;
+}
+
+/* Removes padding when added, used for image on modals */
+.no-pad {
+    padding: 0; /* Remove padding */
+}
+
+/* style the image at the top of modal */
+.modal-header img.modal-image {
+    align-items: center;
+    border-radius: 5px; /* Rounded border*/
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border: none;
+}
+
+/* Make star icons larger */
+.stars i {
+    font-size: 1.5rem;
+}
+

@@ -1,0 +1,43 @@
+<div th:fragment="filter(url, userGames)">
+  <form method="get" th:action="@{${url}}" class="form-inline my-3">
+    <div class="row gx-1 w-100">
+      <!-- Search -->
+      <div class="col-md-7">
+        <input type="text" class="form-control w-100" name="searchQuery" placeholder="Search..."
+               th:value="${searchQuery}">
+      </div>
+      <!-- Sort -->
+      <div class="col-md-2">
+        <select class="form-select w-100" name="sortBy">
+          <option th:value="''" th:selected="${sortBy == null}">Sort By</option>
+          <option th:value="title" th:selected="${sortBy == 'title'}">Title</option>
+          <option th:value="releaseDate" th:selected="${sortBy == 'releaseDate'}">Release Date</option>
+          <option th:value="rating" th:selected="${sortBy == 'rating'}" th:if="${userGames}">Rating</option>
+        </select>
+      </div>
+      <!-- Filter games already in list -->
+      <div class="col-md-2" th:if="${!userGames}">
+        <select class="form-select w-100" name="showFilter">
+          <option th:value="''" th:selected="${showFilter == null}">All</option>
+          <option th:value="inList" th:selected="${showFilter == 'inList'}">In my collection</option>
+          <option th:value="notInList" th:selected="${showFilter == 'notInList'}">Not in collection</option>
+        </select>
+      </div>
+      <!-- Filter by rating -->
+      <div class="col-md-2" th:if="${userGames}">
+        <select class="form-select w-100" name="filterByRating">
+          <option th:value="-1" th:selected="${filterByRating == null}">Rating</option>
+          <option th:value="5" th:selected="${filterByRating == 5}">5 Stars</option>
+          <option th:value="4" th:selected="${filterByRating == 4}">4 Stars</option>
+          <option th:value="3" th:selected="${filterByRating == 3}">3 Stars</option>
+          <option th:value="2" th:selected="${filterByRating == 2}">2 Stars</option>
+          <option th:value="1" th:selected="${filterByRating == 1}">1 Stars</option>
+        </select>
+      </div>
+      <!-- Apply Filter Button -->
+      <div class="col-md-1">
+        <button type="submit" class="btn btn-primary w-100">Apply</button>
+      </div>
+    </div>
+  </form>
+</div>
