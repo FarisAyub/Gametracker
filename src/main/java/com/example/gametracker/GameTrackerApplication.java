@@ -9,18 +9,18 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class GameTrackerApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(GameTrackerApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(GameTrackerApplication.class, args);
+    }
 
-	// Runs at startup and fetches games from the RAWG games API
-	@Bean
-	CommandLineRunner runOnStartup(GameApiService gameApiService) {
-		return args -> {
-			if (gameApiService.isDatabaseEmpty()) {
-				gameApiService.fetchGamesApi();
-			}
-		};
-	}
+    // Runs at startup and fetches games from the RAWG games API
+    @Bean
+    CommandLineRunner runOnStartup(GameApiService gameApiService) {
+        return args -> {
+            if (gameApiService.isDatabaseEmpty()) {
+                gameApiService.fetchGamesApi();
+            }
+        };
+    }
 
 }

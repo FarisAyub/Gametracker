@@ -11,5 +11,6 @@ import java.util.Optional;
 @Repository
 public interface GameRepository extends JpaRepository<Game, Long> {
     Optional<Game> findByTitleIgnoreCase(String title);
+
     Page<Game> findAll(Pageable pageable);
 }
