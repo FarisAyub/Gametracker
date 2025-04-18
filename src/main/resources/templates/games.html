@@ -2,70 +2,71 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Games List</title>
     <!-- Google font -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap">
-    <!-- Bootstrap 5 css-->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Font awesome (Icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="/css/style.css">
+    <link href="/css/style.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 <!-- Navbar fragment -->
 <th:block th:replace="~{fragments/navbar :: navbar}"></th:block>
 
-<div class="container">
+<main class="flex-fill">
+    <div class="container">
 
-    <!-- Fragment for filters -->
-    <th:block th:replace="~{fragments/filter :: filter(url='/games',userGames=false)}"></th:block>
+        <!-- Search bar and filters fragment -->
+        <th:block th:replace="~{fragments/filter :: filter(url='/games',userGames=false)}"></th:block>
 
-    <!-- Displays all games in bootstrap cards -->
-    <div class="row">
-        <!-- Thymeleaf loop to display games -->
-        <div th:each="game : ${games}" class="col-md-4 mb-4">
-            <div class="card text-center" data-bs-toggle="modal" data-bs-target="#gameModal"
-                 th:data-bs-url="${game.url}"
-                 th:data-bs-game-id="${game.id}"
-                 th:data-bs-game-title="${game.title}"
-                 th:data-bs-game-developer="${game.developer}"
-                 th:data-bs-game-publisher="${game.publisher}"
-                 th:data-bs-game-release-date="${game.releaseDate}">
-                <img class="card-img-top" th:src="${game.url}" alt="Game image">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${game.title}">Game Title</h5>
-
-                    <p class="card-text">
-                        <span th:text="${game.developer}">Developer</span><br>
-                        <span th:text="${game.publisher}">Publisher</span><br>
-                        <span th:text="${game.releaseDate}">Release Date</span><br>
-                        <!-- Show badge if the game id exists in the users game's list -->
-                        <span class="badge bg-success" th:if="${userGameIds.contains(game.id)}">On Your List</span>
-                    </p>
+        <div class="row">
+            <!-- Loop creates card for each game -->
+            <div class="col-md-4 mb-4" th:each="game : ${games}">
+                <div class="card text-center" data-bs-target="#gameModal" data-bs-toggle="modal"
+                     th:data-bs-game-developer="${game.developer}"
+                     th:data-bs-game-id="${game.id}"
+                     th:data-bs-game-publisher="${game.publisher}"
+                     th:data-bs-game-release-date="${game.releaseDate}"
+                     th:data-bs-game-title="${game.title}"
+                     th:data-bs-url="${game.url}">
+                    <img alt="Game image" class="card-img-top" th:src="${game.url}">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${game.title}">Game Title</h5>
+                        <p class="card-text">
+                            <span th:text="${game.developer}">Developer</span><br>
+                            <span th:text="${game.publisher}">Publisher</span><br>
+                            <span th:text="${game.releaseDate}">Release Date</span><br>
+                            <!-- Bootstrap badge if the game's id is in user's game list --->
+                            <span class="badge bg-success" th:if="${userGameIds.contains(game.id)}">On Your List</span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Pagination fragment -->
+        <th:block th:replace="~{fragments/pagination :: pagination(url='/games', size='18')}"></th:block>
+
+        <!-- Modal fragment -->
+        <th:block th:replace="~{fragments/modal :: modal(method='POST',showDelete=false,submitText='Add')}"></th:block>
     </div>
-
-    <!-- Pagination fragment -->
-    <th:block th:replace="~{fragments/pagination :: pagination(url='/games', size='18')}"></th:block>
-
-    <!-- Modal fragment -->
-    <th:block th:replace="~{fragments/modal :: modal(method='POST',showDelete=false,submitText='Add')}"></th:block>
-
-    <!-- Javascript for toast -->
-    <script th:src="@{/js/toast.js}"></script>
-    <!-- Javascript for data validation on note/rating  -->
-    <script th:src="@{js/validate-user-game.js}"></script>
-    <!-- Rest of javascript for this page -->
-    <script th:src="@{js/games.js}"></script>
-    <!-- Bootstrap toast, gets filled using javascript when an alert is returned -->
-    <div id="toastContainer" aria-live="polite" aria-atomic="true" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-</div>
+</main>
+<!-- JS for toast -->
+<script th:src="@{/js/toast.js}"></script>
+<!-- JS input validation for note and rating  -->
+<script th:src="@{js/validate-user-game.js}"></script>
+<!-- Main javascript file for this page -->
+<script th:src="@{js/games.js}"></script>
+<!-- Bootstrap toast, html is replaced and then shown for 3000ms using JS -->
+<div aria-atomic="true" aria-live="polite" class="toast-container position-fixed bottom-0 end-0 p-3"
+     id="toastContainer"></div>
+<!-- Footer fragment -->
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
