@@ -17,13 +17,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.mockito.ArgumentMatchers.any;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -58,11 +58,11 @@ public class GameControllerTest {
                 new Game("url", "Elden Ring", LocalDate.of(2005, Month.FEBRUARY, 6), "FromSoftware", "FS"),
                 new Game("url", "Valheim", LocalDate.of(2002, Month.JANUARY, 7), "Iron Gate", "IG")
         );
-        // Manually add id's to each game using setter
+        // Manually set id's
         games.get(0).setId(1L);
         games.get(1).setId(2L);
         games.get(2).setId(5L);
-        userGameIds = new HashSet<>(Arrays.asList(1L, 2L, 3L)); // Set that tracks the id's of games on the user's list
+        userGameIds = new HashSet<>(Arrays.asList(1L, 2L, 3L)); // Set that tracks the id's of games on the user's list (only 2 from our games list)
         pageable = PageRequest.of(0, 18); // Same default page/size as controller
     }
 
@@ -70,8 +70,8 @@ public class GameControllerTest {
     public void getAllGames_ShouldReturnGamesAndAttributes() throws Exception {
         Page<Game> pageOfGames = new PageImpl<>(games, pageable, games.size()); // Return page containing the 3 games
 
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames); // When findAll(pageable) is called, return pageOfGames
-        when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // When call to get all games in user's list, return empty list
+        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames); // When findAll is called, return pageOfGames
+        when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // Return empty list
 
         mockMvc.perform(get("/games"))
                 .andExpect(status().isOk())
@@ -86,10 +86,10 @@ public class GameControllerTest {
 
     @Test
     public void getAllGames_EmptyLists_ShouldStillReturnGamesView() throws Exception {
-        Page<Game> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0); // Empty page result
+        Page<Game> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0); // Empty page
 
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(emptyPage); // When findall with a pageable is called, return an empty page
-        when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // When call to get all games in user's list return empty
+        when(gameRepository.findAll(any(Pageable.class))).thenReturn(emptyPage); // When findall is called, return empty Page
+        when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // Return empty list
 
         mockMvc.perform(get("/games"))
                 .andExpect(status().isOk())
@@ -102,23 +102,20 @@ public class GameControllerTest {
         when(gameRepository.findAll()).thenReturn(games);
         when(userGameRepository.findAll()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/games").param("page", "-1"))
-                .andExpect(status().isOk()) // Should be successful as there's an exception handler that redirects to error
-                .andExpect(view().name("error")); // Redirect to the error page
+        mockMvc.perform(get("/games").param("page", "-1")) // Invalid page
+                .andExpect(status().isOk()) // Successful as exception handler redirects to error page
+                .andExpect(view().name("error")); // Should be redirected to the error page
     }
 
     @Test
     public void getAllGames_WithOptionalSearchSortAndFilter_ShouldReturnFilteredGames() throws Exception {
-
         Page<Game> pageOfGames = new PageImpl<>(games, pageable, games.size());
 
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames);
+        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames); // When findall, return Page
 
-        when(gameRepository.findAll()).thenReturn(games);
         UserGame userGame = new UserGame(games.get(0), 5, "Great!");
-        userGame.setId(1L);
         List<UserGame> userGames = List.of(userGame);
-        when(userGameRepository.findAll()).thenReturn(userGames);
+        when(userGameRepository.findAll()).thenReturn(userGames); // Simulate returning list of games
 
         mockMvc.perform(get("/games")
                         .param("searchQuery", "witcher")
@@ -135,7 +132,7 @@ public class GameControllerTest {
                 .andExpect(model().attributeExists("userGameIds"))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("hasNext", false))
-                .andExpect(model().attribute("hasPrevious", false));;
+                .andExpect(model().attribute("hasPrevious", false));
 
     }
 
@@ -145,7 +142,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterByInList(games, showFilter, userGameIds);
 
-        assertEquals(2, filtered.size()); // Should return 2 games which are in the list, Witcher 3 and Elden ring
+        assertEquals(2, filtered.size()); // Return 2 games in list: "The Witcher 3" and "Elden ring"
     }
 
     @Test
@@ -154,7 +151,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterByInList(games, showFilter, userGameIds);
 
-        assertEquals(1, filtered.size()); // Should return only 1 item which is "Valheim", as it's id is not in the user game id's list (3)
+        assertEquals(1, filtered.size()); // Return 1 game not in list: "Valheim"
     }
 
     @Test
@@ -162,7 +159,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterByInList(games, null, userGameIds);
 
-        assertEquals(games, filtered);
+        assertEquals(games, filtered); // Original list same as filtered list
     }
 
     @Test
@@ -172,7 +169,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterByInList(games, showFilter, emptySet);
 
-        assertEquals(0, filtered.size()); // empty list
+        assertEquals(0, filtered.size()); // Empty list
     }
 
     @Test
@@ -181,7 +178,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterBySearch(games, searchQuery);
 
-        assertEquals(1, filtered.size()); // Only 1 game contains valheim as a substring
+        assertEquals(1, filtered.size()); // 1 game contains "Valheim"
     }
 
     @Test
@@ -190,7 +187,7 @@ public class GameControllerTest {
 
         List<Game> filtered = gameController.filterBySearch(games, searchQuery);
 
-        assertEquals(0, filtered.size()); // No game should match for test
+        assertEquals(0, filtered.size()); // No game matches "test" as a substring
     }
 
     @Test
@@ -199,6 +196,7 @@ public class GameControllerTest {
 
         List<Game> sorted = gameController.sortGames(games, sortBy);
 
+        // Sorted A-Z
         assertEquals("Elden Ring", sorted.get(0).getTitle());
         assertEquals("The Witcher 3", sorted.get(1).getTitle());
         assertEquals("Valheim", sorted.get(2).getTitle());
@@ -221,7 +219,7 @@ public class GameControllerTest {
 
         List<Game> sorted = gameController.sortGames(games, sortBy);
 
-        Assertions.assertEquals(games, sorted); // Original list should be same as filtered list when no sort option
+        Assertions.assertEquals(games, sorted); // Original list same as filtered list
     }
 
 

@@ -38,48 +38,6 @@ public class UserGameController {
     }
 
     /**
-     * Lists all games in user list, filtered and sorted down by optional parameters.
-     * Uses a DTO to filter the information being passed, also allows details from the Game model to be added
-     *
-     * @param searchQuery    Optional parameter that can be passed in by searching on the website, text is filtered by this
-     * @param sortBy         Optional parameter that accepts values "rating" "releaseDate" and "title" and sorts alphabetically based on the parameter
-     * @param filterByRating Optional parameter that takes in an integer from -1 to 5 to be used to filter games that have this rating
-     * @param page           Optional parameter that takes in the current page on user-games. Defaults to 0 for when a page hasn't been passed in
-     * @param size           Optional parameter that takes a size for pages. Defaults to 9 user games per page unless modified
-     * @param model          Used to return information back to the thymeleaf html page
-     * @return the model and list of games and other variables back to the user-games page
-     */
-    @GetMapping
-    public String getAllUserGames(
-            @RequestParam(required = false) String searchQuery,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) Integer filterByRating,
-            @RequestParam(required = false, defaultValue = "0") Integer page,
-            @RequestParam(required = false, defaultValue = "9") Integer size,
-            Model model) {
-
-        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
-        Page<UserGame> userGamesPage = userGameRepository.findAll(pageable); // Filters results using pageable 
-        List<UserGame> allUserGames = userGamesPage.getContent();
-
-        allUserGames = filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
-        allUserGames = filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
-        allUserGames = sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
-
-        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(allUserGames);
-
-        // Returns everything back to the template in thymeleaf
-        model.addAttribute("userGames", dtoUserGames);
-        model.addAttribute("searchQuery", searchQuery);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("filterByRating", filterByRating);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", userGamesPage.hasNext());
-        model.addAttribute("hasPrevious", userGamesPage.hasPrevious());
-        return "user-games";
-    }
-
-    /**
      * Converts a list of user games into a list of user game response, which contains fields for both the game details
      * and the user's game details like rating and note
      *
@@ -105,6 +63,47 @@ public class UserGameController {
         return list;
     }
 
+    /**
+     * Lists all games in user list, filtered and sorted down by optional parameters.
+     * Uses a DTO to filter the information being passed, also allows details from the Game model to be added
+     *
+     * @param searchQuery    Optional parameter that can be passed in by searching on the website, text is filtered by this
+     * @param sortBy         Optional parameter that accepts values "rating" "releaseDate" and "title" and sorts alphabetically based on the parameter
+     * @param filterByRating Optional parameter that takes in an integer from -1 to 5 to be used to filter games that have this rating
+     * @param page           Optional parameter that takes in the current page on user-games. Defaults to 0 for when a page hasn't been passed in
+     * @param size           Optional parameter that takes a size for pages. Defaults to 9 user games per page unless modified
+     * @param model          Used to return information back to the thymeleaf html page
+     * @return the model and list of games and other variables back to the user-games page
+     */
+    @GetMapping
+    public String getAllUserGames(
+            @RequestParam(required = false) String searchQuery,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Integer filterByRating,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "9") Integer size,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
+        Page<UserGame> userGamesPage = userGameRepository.findAll(pageable); // Filters results using pageable
+        List<UserGame> allUserGames = userGamesPage.getContent();
+
+        allUserGames = filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
+        allUserGames = filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
+        allUserGames = sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
+
+        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(allUserGames);
+
+        // Returns everything back to the template in thymeleaf
+        model.addAttribute("userGames", dtoUserGames);
+        model.addAttribute("searchQuery", searchQuery);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("filterByRating", filterByRating);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNext", userGamesPage.hasNext());
+        model.addAttribute("hasPrevious", userGamesPage.hasPrevious());
+        return "user-games";
+    }
 
     /**
      * Adds a game to the users games list, setting the rating and note provided

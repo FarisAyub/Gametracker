@@ -7,12 +7,12 @@
  */
 function validateRatingNote(rating, note) {
     if (rating < 1 || rating > 5) {
-        showToast("Rating must be between 1 and 5", "bg-danger text-white","Error","<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>");
+        showToast("Rating must be between 1 and 5", "bg-danger text-white", "Error", "<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>");
         return false;  // Returns false immediately, regardless of note was correct
     }
 
     if (note.length > 255) {
-        showToast("Note cannot be longer than 255 characters", "bg-danger text-white","Error","<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>");
+        showToast("Note cannot be longer than 255 characters", "bg-danger text-white", "Error", "<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>");
         return false;  // Returns false regardless of if rating was correct
     }
     return true;

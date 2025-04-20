@@ -52,7 +52,7 @@ public class UserGameControllerTest {
     @InjectMocks
     private UserGameController userGameController;
 
-    private UserGameRequest request; // Create user game request to reinitialise and assign values before each test
+    private UserGameRequest request;
 
     private List<UserGame> userGames;
 
@@ -63,7 +63,7 @@ public class UserGameControllerTest {
 
     @BeforeEach
     public void setup() {
-        // Creates a new request object before each test being run. This saves having to repeatedly remake and re-assign the request for each test
+        // Request to be passed as JSON for http requests
         request = new UserGameRequest();
         request.setGameId(1L);
         request.setRating(5);
@@ -83,7 +83,7 @@ public class UserGameControllerTest {
     public void getAllUserGames_ShouldReturnUserGameAndAllAttributes() throws Exception {
         Page<UserGame> pageOfUserGames = new PageImpl<>(userGames, pageable, userGames.size()); // Page containing our mock data
 
-        when(userGameRepository.findAll(any(Pageable.class))).thenReturn(pageOfUserGames); // When findAll is called return our mock
+        when(userGameRepository.findAll(any(Pageable.class))).thenReturn(pageOfUserGames); // When findAll is called, return Page with mock data
 
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk())
@@ -107,8 +107,8 @@ public class UserGameControllerTest {
     @Test
     public void addUserGame_NullNote_ShouldAddGame() throws Exception {
         request.setNote(null);
-        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game())); // Simulate game with id exists
-        when(userGameRepository.existsByGameId(request.getGameId())).thenReturn(false); // Simulate game is not in user's list
+        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game()));
+        when(userGameRepository.existsByGameId(request.getGameId())).thenReturn(false);
 
         mockMvc.perform(post("/user-games").contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -118,7 +118,7 @@ public class UserGameControllerTest {
 
     @Test
     public void addUserGame_RatingNotValid_ShouldReturnBadRequest() throws Exception {
-        request.setRating(6); // Rating validation is set to be a value from 1-5
+        request.setRating(6); // Rating validation expects value of 1-5
 
         when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game())); // Simulate game with id exists
 
@@ -130,9 +130,8 @@ public class UserGameControllerTest {
 
     @Test
     public void addUserGame_NoteNotValid_ShouldReturnBadRequest() throws Exception {
-        String testNote = "A".repeat(256); // creates a string larger than 255 characters
-
-        request.setNote(testNote); // Note is larger than 255 characters
+        String testNote = "A".repeat(256); // String larger than 255 characters
+        request.setNote(testNote);
 
         when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game())); // Simulate game with id exists
 
@@ -144,23 +143,19 @@ public class UserGameControllerTest {
 
     @Test
     public void addUserGame_DuplicateEntry_ShouldReturnConflict() throws Exception {
-        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game())); // Simulate game with id exists
+        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game()));
         when(userGameRepository.existsByGameId(request.getGameId())).thenReturn(true); // Simulate game is already in list
 
-        // Mock a JSON post request, should return conflict error, which would return the string for when a game is already in the user's game list
         mockMvc.perform(post("/user-games").contentType("application/json").content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isConflict())
+                .andExpect(status().isConflict()) // Conflict as id is already in list
                 .andExpect(content().string("Game is already in your list."));
 
     }
 
     @Test
     public void addUserGame_GameDoesntExist_ShouldReturnBadRequest() throws Exception {
+        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.empty()); // Simulate game doesn't exist
 
-        // Simulate that a game with the id doesn't exist, setting the optional to empty
-        when(gameRepository.findById(request.getGameId())).thenReturn(Optional.empty());
-
-        // Mock a JSON post request, should return bad request with game not found string
         mockMvc.perform(post("/user-games").contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Game not found."));
@@ -170,7 +165,7 @@ public class UserGameControllerTest {
     public void deleteUserGame_GameExists_ShouldDeleteGame() throws Exception {
         long gameId = 1L;
 
-        when(userGameRepository.existsById(gameId)).thenReturn(true); // Simulate game is in list
+        when(userGameRepository.existsById(gameId)).thenReturn(true); // Simulate game with id in list
 
         mockMvc.perform(delete("/user-games/{id}", gameId))
                 .andExpect(status().isOk())
@@ -192,7 +187,7 @@ public class UserGameControllerTest {
         long id = 1L;
         request.setGameId(id);
 
-        UserGame existingUserGame = new UserGame(); // Values existing in database
+        UserGame existingUserGame = new UserGame(); // Rating and note before being updated
         existingUserGame.setRating(2);
         existingUserGame.setNote("Original note");
 
@@ -202,12 +197,12 @@ public class UserGameControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("Game updated."));
 
-        ArgumentCaptor<UserGame> captor = ArgumentCaptor.forClass(UserGame.class);
-        verify(userGameRepository).save(captor.capture());
+        ArgumentCaptor<UserGame> captor = ArgumentCaptor.forClass(UserGame.class); // Create captor
+        verify(userGameRepository).save(captor.capture()); // When saving to database, capture the value passed in
 
         UserGame updatedUserGame = captor.getValue();
-        assertEquals(5, updatedUserGame.getRating()); // Make sure the updated game has the new rating
-        assertEquals("Test note", updatedUserGame.getNote()); // Make sure the updated game has the new note
+        assertEquals(5, updatedUserGame.getRating()); // Check that rating was updated
+        assertEquals("Test note", updatedUserGame.getNote()); // Check that note was updated
     }
 
     @Test
@@ -215,7 +210,7 @@ public class UserGameControllerTest {
         long id = 1L;
         request.setGameId(id);
 
-        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.empty()); // Simulate entry with the id doesn't exist to update
+        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.empty()); // Simulate game not in user's list
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
@@ -226,9 +221,9 @@ public class UserGameControllerTest {
     public void updateUserGame_RatingNotValid_ShouldReturnBadRequest() throws Exception {
         long id = 1L;
         request.setGameId(id);
-        request.setRating(6); // Invalid rating, must be 1-5
+        request.setRating(6); // Validation requires rating of 1-5
 
-        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.of(new UserGame())); // id exists in user games list
+        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.of(new UserGame())); // Game is on user's list
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -238,12 +233,12 @@ public class UserGameControllerTest {
     @Test
     public void updateUserGame_NoteNotValid_ShouldReturnBadRequest() throws Exception {
         long id = 1L;
-        String testNote = "A".repeat(256); // Creates a string larger than 255 characters
+        String testNote = "A".repeat(256); // String larger than 255 characters
 
         request.setGameId(id);
-        request.setNote(testNote); // Note is larger than 255 characters
+        request.setNote(testNote); // Invalid note
 
-        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.of(new UserGame())); // id exists in user games list
+        when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.of(new UserGame())); // Game is in user's list
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -256,7 +251,7 @@ public class UserGameControllerTest {
 
         List<UserGame> filtered = userGameController.filterBySearch(userGames, searchQuery);
 
-        assertEquals(1, filtered.size()); // Only 1 game should contain witcher as a substring
+        assertEquals(1, filtered.size()); // Only 1 game contains witcher as a substring
     }
 
     @Test
@@ -265,7 +260,7 @@ public class UserGameControllerTest {
 
         List<UserGame> filtered = userGameController.filterBySearch(userGames, searchQuery);
 
-        assertEquals(0, filtered.size()); // Size should be 0 as there are are no games with test as a substring
+        assertEquals(0, filtered.size()); // No games with test as a substring
     }
 
     @Test
@@ -274,7 +269,7 @@ public class UserGameControllerTest {
 
         List<UserGame> filtered = userGameController.filterByRating(userGames, rating);
 
-        assertEquals(1, filtered.size()); // Only 1 game should have a rating of 5
+        assertEquals(1, filtered.size()); // Only 1 game has a rating of 5
     }
 
     @Test
@@ -283,7 +278,7 @@ public class UserGameControllerTest {
 
         List<UserGame> filtered = userGameController.filterByRating(userGames, rating);
 
-        assertEquals(0, filtered.size()); // No games should have a rating of 0
+        assertEquals(0, filtered.size()); // No games have a rating of 0
     }
 
     @Test
@@ -292,6 +287,7 @@ public class UserGameControllerTest {
 
         List<UserGame> sorted = userGameController.sortUserGames(userGames, sortBy);
 
+        // A-Z
         assertEquals("Elden Ring", sorted.get(0).getGame().getTitle());
         assertEquals("The Witcher 3", sorted.get(1).getGame().getTitle());
         assertEquals("Valheim", sorted.get(2).getGame().getTitle());
@@ -314,9 +310,9 @@ public class UserGameControllerTest {
 
         List<UserGame> sorted = userGameController.sortUserGames(userGames, sortBy);
 
-        assertEquals(5, sorted.get(0).getRating()); // Witcher 3
-        assertEquals(4, sorted.get(1).getRating()); // Elden Ring
-        assertEquals(3, sorted.get(2).getRating()); // Valheim
+        assertEquals(5, sorted.get(0).getRating()); // Witcher 3, rating of 5
+        assertEquals(4, sorted.get(1).getRating()); // Elden Ring, rating of 4
+        assertEquals(3, sorted.get(2).getRating()); // Valheim, rating of 3
     }
 
 }

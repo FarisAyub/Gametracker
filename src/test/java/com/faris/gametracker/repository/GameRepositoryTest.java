@@ -29,37 +29,31 @@ public class GameRepositoryTest {
     @BeforeEach
     public void setup() {
         game = new Game("url", "The Witcher 3", LocalDate.of(2001, Month.MAY, 5), "CD Projekt Red", "CDPR");
+        gameRepository.save(game); // Add our test game to database
     }
 
     @Test
     public void findByTitleIgnoreCase_Capitalised_ShouldReturnGame() {
-        gameRepository.save(game); // Add our test game to database
-
         Optional<Game> foundGame = gameRepository.findByTitleIgnoreCase("THE WITCHER 3");
 
-        assertThat(foundGame.isPresent()).isTrue(); // Make sure game is found, aka optional isn't empty
-        assertEquals(foundGame.get(), game); // Make sure the game that is returned is the expected one
+        assertThat(foundGame.isPresent()).isTrue(); // Game should be found (optional not empty)
+        assertEquals(foundGame.get(), game); // Make sure it is the correct game
     }
 
     @Test
     public void findByTitleIgnoreCase_LowerCase_ShouldReturnGame() {
-        gameRepository.save(game); // Add our test game to database
-
         Optional<Game> gameOptional = gameRepository.findByTitleIgnoreCase("the witcher 3");
 
-        assertThat(gameOptional.isPresent()).isTrue(); // Make sure game is found, aka optional isn't empty
-        assertEquals(gameOptional.get(), game); // Make sure the game that is returned is the expected one
+        assertThat(gameOptional.isPresent()).isTrue(); // Game should be found (optional not empty)
+        assertEquals(gameOptional.get(), game); // Make sure it is the correct game
 
     }
 
     @Test
     public void findByTitleIgnoreCase_GameDoesntExist_ShouldReturnEmptyOptional() {
-        gameRepository.save(game); // Add our test game to database
-
         Optional<Game> gameOptional = gameRepository.findByTitleIgnoreCase("elden ring"); // Doesn't exist
 
         assertThat(gameOptional.isPresent()).isFalse(); // Optional should be empty
     }
-
 
 }

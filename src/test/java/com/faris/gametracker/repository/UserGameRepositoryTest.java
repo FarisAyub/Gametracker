@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 public class UserGameRepositoryTest {
@@ -22,7 +22,7 @@ public class UserGameRepositoryTest {
     @Test
     public void existsByGameId_Exists_ShouldReturnTrue() {
         UserGame added = userGameRepository.save(new UserGame()); // Add a game to user's list
-        boolean exists = userGameRepository.existsById(added.getId()); // Check that the id of the game we added exists
+        boolean exists = userGameRepository.existsById(added.getId()); // Check if the game is in our list using the id
 
         assertTrue(exists);
     }

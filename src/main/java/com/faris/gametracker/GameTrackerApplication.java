@@ -16,7 +16,8 @@ public class GameTrackerApplication {
 
     // Runs at startup and fetches games from the RAWG games API
     @Bean
-    @Profile("!test") // Don't populate database for integration tests
+    @Profile("!test")
+    // Don't populate database for integration tests
     CommandLineRunner runOnStartup(GameApiService gameApiService) {
         return args -> {
             if (gameApiService.isDatabaseEmpty()) {

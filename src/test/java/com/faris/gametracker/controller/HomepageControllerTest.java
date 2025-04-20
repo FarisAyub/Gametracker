@@ -23,7 +23,7 @@ public class HomepageControllerTest {
     public void home_ShouldReturnIndexPage() throws Exception {
 
         mockMvc.perform(get("/"))
-                .andExpect(view().name("index")); // Should return index for the view
+                .andExpect(view().name("index")); // Should redirect to index as the view
     }
 
 }

@@ -16,7 +16,7 @@ public class GameApiService {
     private final RestTemplate restTemplate;
     private final GameRepository gameRepository;
 
-    public GameApiService(GameRepository gameRepository , RestTemplate restTemplate) {
+    public GameApiService(GameRepository gameRepository, RestTemplate restTemplate) {
         this.gameRepository = gameRepository;
         this.restTemplate = restTemplate;
     }

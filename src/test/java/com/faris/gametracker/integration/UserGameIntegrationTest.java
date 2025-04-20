@@ -43,7 +43,6 @@ public class UserGameIntegrationTest {
     @Autowired
     private ObjectMapper jsonMapper;
 
-    private UserGame userGame;
     private List<Game> games;
     private UserGameRequest request;
 
@@ -73,7 +72,7 @@ public class UserGameIntegrationTest {
         );
         userGameRepository.saveAll(userGames); // Add 5 games to user's game list
 
-        // Request used to add a game to the user's game list
+        // Request for http requests
         request = new UserGameRequest();
         request.setGameId(gameRepository.findAll().get(5).getId());
         request.setRating(1);
@@ -88,7 +87,7 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5)));
+                .andExpect(model().attribute("userGames", hasSize(5))); // All games
     }
 
     @Test
@@ -98,36 +97,36 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 1))
-                .andExpect(model().attribute("userGames", hasSize(1))); // 4 per page, setup initialises 5 total, so second page should have 1
+                .andExpect(model().attribute("userGames", hasSize(1))); // 4 per page, 5 total games, second page shows 1
     }
 
     @Test
     public void userGamePage_InvalidPage_ShouldReturnEmptyList() throws Exception {
-        mockMvc.perform(get("/user-games").param("page", "55"))
+        mockMvc.perform(get("/user-games").param("page", "55")) // Not enough games for page 55
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 55))
-                .andExpect(model().attribute("userGames", hasSize(0)));
+                .andExpect(model().attribute("userGames", hasSize(0))); // Empty page
     }
 
     @Test
     public void userGamePage_AddValidUserGame_ShouldAddSuccessfully() throws Exception {
         mockMvc.perform(post("/user-games").contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Game added to your list!")); //
+                .andExpect(content().string("Game added to your list!")); // Game added to database
 
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(6))); // Originally contains 5
+                .andExpect(model().attribute("userGames", hasSize(6))); // New list contains 6 games (5 before adding)
     }
 
     @Test
     public void userGamePage_AddInvalidRating_ShouldNotAdd() throws Exception {
-        request.setRating(11);
+        request.setRating(11); // Rating validation is 1-5
         mockMvc.perform(post("/user-games").contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Validation error:")));
@@ -137,14 +136,14 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5))); // Not added
+                .andExpect(model().attribute("userGames", hasSize(5))); // Still 5 games, nothing added
     }
 
     @Test
     public void userGamePage_AddInvalidNote_ShouldNotAdd() throws Exception {
-        String testNote = "A".repeat(256); // Creates a string larger than 255 characters
+        String testNote = "A".repeat(256); // String larger than 255 characters
 
-        request.setNote(testNote); // Note longer than 255 characters
+        request.setNote(testNote); // Invalid note
 
         mockMvc.perform(post("/user-games").contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -155,12 +154,12 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5))); // Not added
+                .andExpect(model().attribute("userGames", hasSize(5))); // Still 5 games, nothing added
     }
 
     @Test
     public void userGamePage_AddInvalidGame_ShouldNotAdd() throws Exception {
-        request.setGameId(10000L); // Game non existent
+        request.setGameId(10000L); // Game doesn't exist
 
         mockMvc.perform(post("/user-games").contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -171,12 +170,12 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5))); // Not added
+                .andExpect(model().attribute("userGames", hasSize(5))); // Still 5 games, nothing added
     }
 
     @Test
     public void userGamePage_AddDuplicateGame_ShouldNotAdd() throws Exception {
-        request.setGameId(gameRepository.findAll().get(0).getId()); // Get id of first entry and set that as our id to update
+        request.setGameId(gameRepository.findAll().get(0).getId()); // Get id of first game
 
         mockMvc.perform(post("/user-games").contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -187,96 +186,96 @@ public class UserGameIntegrationTest {
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5))); // Not added
+                .andExpect(model().attribute("userGames", hasSize(5))); // Still 5 games, nothing added
     }
 
     @Test
     public void userGamePage_UpdateValidUserGame_ShouldUpdateSuccessfully() throws Exception {
-        Long id = userGameRepository.findAll().get(0).getId(); // Existing id of first entry
+        Long id = userGameRepository.findAll().get(0).getId(); // Get id of first game
         request.setGameId(id);
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Game updated."));
 
-        Optional<UserGame> game = userGameRepository.findById(id); // Get the UserGame we just updated
-        assertEquals(request.getRating(), game.get().getRating()); // Make sure the UserGame has our new rating
+        Optional<UserGame> game = userGameRepository.findById(id); // Get the entry we just updated
+        assertEquals(request.getRating(), game.get().getRating()); // Make sure the rating was changed
     }
 
     @Test
     public void userGamePage_UpdateInvalidRating_ShouldNotUpdate() throws Exception {
-        Long id = userGameRepository.findAll().get(0).getId(); // Existing id of first entry
+        Long id = userGameRepository.findAll().get(0).getId(); // Get id of first game
         request.setGameId(id);
-        request.setRating(11);
+        request.setRating(11); // Rating validates 1-5
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid input:")));
 
-        Optional<UserGame> game = userGameRepository.findById(id); // Get the UserGame we just updated
-        assertEquals(5, game.get().getRating()); // Make sure the rating is still 5, didn't update
+        Optional<UserGame> game = userGameRepository.findById(id); // Get the entry we tried to update
+        assertEquals(5, game.get().getRating()); // Make sure rating was not changed
     }
 
     @Test
     public void userGamePage_UpdateInvalidNote_ShouldNotUpdate() throws Exception {
-        Long id = userGameRepository.findAll().get(0).getId(); // Existing id of first entry
-        String testNote = "A".repeat(256); // Creates a string larger than 255 characters
+        Long id = userGameRepository.findAll().get(0).getId(); // Get id of first game
+        String testNote = "A".repeat(256); // String larger than 255 characters
 
         request.setGameId(id);
-        request.setNote(testNote); // Note validation requires 255 or fewer characters
+        request.setNote(testNote); // Invalid note
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(containsString("Invalid input:")));
 
-        Optional<UserGame> game = userGameRepository.findById(id); // Get the UserGame we just updated
-        assertEquals("Amazing!", game.get().getNote()); // Make sure the note wasn't updated
+        Optional<UserGame> game = userGameRepository.findById(id); // Get the entry we tried to update
+        assertEquals("Amazing!", game.get().getNote()); // Make sure the note was not changed
     }
 
     @Test
     public void userGamePage_UpdateInvalidGame_ShouldNotUpdate() throws Exception {
-        Long id = gameRepository.findAll().get(5).getId(); // Game exists, but not in user's game list
+        Long id = gameRepository.findAll().get(5).getId(); // Get id of a game that exists, but isn't in user's list
         request.setGameId(id);
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
 
-        Optional<UserGame> game = userGameRepository.findById(id); // Should return empty optional since id doesn't exist
-        assert (game.isEmpty()); // Should be empty optional
+        Optional<UserGame> game = userGameRepository.findById(id); // Should return empty optional since game doesn't exist
+        assert (game.isEmpty()); // Empty optional
     }
 
     @Test
     public void userGamePage_UpdateNonExistingUserGame_ShouldNotUpdate() throws Exception {
         Long id = 1111111L;
-        request.setGameId(id); // Game does NOT exist
+        request.setGameId(id); // Game doesn't exist with id
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound());
 
         Optional<UserGame> game = userGameRepository.findById(id); // Should return empty optional since id doesn't exist
-        assert (game.isEmpty()); // Should be empty optional
+        assert (game.isEmpty()); // Empty optional
     }
 
     @Test
     public void userGamePage_DeleteUserGame_ShouldRemoveGame() throws Exception {
-        Long id = userGameRepository.findAll().get(0).getId(); // Existing id of first entry
+        Long id = userGameRepository.findAll().get(0).getId(); // Get id of first game
 
         mockMvc.perform(delete("/user-games/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Game removed from your list."));
 
-        assertEquals(4, userGameRepository.findAll().size()); // Originally there's 5, so should be 4 after
-        assertFalse(userGameRepository.findById(id).isPresent()); // Should have been removed
+        assertEquals(4, userGameRepository.findAll().size()); // Size should be down to 4, originally 5
+        assertFalse(userGameRepository.findById(id).isPresent()); // Entry should no longer exist
     }
 
     @Test
     public void userGamePage_DeleteNonExistingUserGame_ShouldNotRemove() throws Exception {
-        Long id = 111111L;
+        Long id = 111111L; // Entry doesn't exist
 
         mockMvc.perform(delete("/user-games/{id}", id))
                 .andExpect(status().isNotFound());
 
-        assertEquals(5, userGameRepository.findAll().size()); // Size has not changed
+        assertEquals(5, userGameRepository.findAll().size()); // Size is not changed
     }
 
 
@@ -292,7 +291,7 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(1)))
                 .andExpect(model().attribute("userGames", contains(
-                        hasProperty("title", is("Valheim")) // iron gate studios, should return valheim
+                        hasProperty("title", is("Valheim")) // Iron gate studios, returns valheim
                 )));
     }
 
@@ -306,7 +305,7 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("searchQuery", searchQuery))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(0))); // No match for terraria in list
+                .andExpect(model().attribute("userGames", hasSize(0))); // No matches for terraria
     }
 
     @Test
@@ -346,7 +345,7 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("sortBy", sortBy))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
-                .andExpect(model().attribute("userGames", contains(
+                .andExpect(model().attribute("userGames", contains( // A-Z
                         hasProperty("title", is("Elden Ring")),
                         hasProperty("title", is("The Witcher 3")),
                         hasProperty("title", is("Title 1")),
@@ -367,11 +366,11 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
                 .andExpect(model().attribute("userGames", contains(
-                        hasProperty("title", is("The Witcher 3")),
-                        hasProperty("title", is("Valheim")),
-                        hasProperty("title", is("Elden Ring")),
-                        hasProperty("title", is("Title 1")),
-                        hasProperty("title", is("Title 2"))
+                        hasProperty("title", is("The Witcher 3")), // 2001
+                        hasProperty("title", is("Valheim")), // 2002
+                        hasProperty("title", is("Elden Ring")), // 2005
+                        hasProperty("title", is("Title 1")), // 2007
+                        hasProperty("title", is("Title 2")) // 2008
                 )));
     }
 
@@ -406,7 +405,7 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("sortBy", sortBy))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
-                .andExpect(model().attribute("userGames", contains(
+                .andExpect(model().attribute("userGames", contains( // Unsorted list
                         hasProperty("title", is("The Witcher 3")),
                         hasProperty("title", is("Elden Ring")),
                         hasProperty("title", is("Valheim")),
@@ -427,12 +426,12 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(1)))
                 .andExpect(model().attribute("userGames", contains(
-                        hasProperty("title", is("The Witcher 3")) // Only game with 5 rating
+                        hasProperty("title", is("The Witcher 3")) // Has rating of 5
                 )));
     }
 
     @Test
-    public void userGamesPage_FilterByInvalidRating_ShouldReturnUnsorted() throws Exception {
+    public void userGamesPage_FilterByInvalidRating_ShouldReturnUnfiltered() throws Exception {
         Integer filterByRating = 55;
 
         mockMvc.perform(get("/user-games").param("filterByRating", String.valueOf(filterByRating)))
@@ -441,13 +440,13 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("filterByRating", filterByRating))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(5)));
+                .andExpect(model().attribute("userGames", hasSize(5))); // Original list, unfiltered
     }
 
     @Test
     public void userGamesPage_SearchAndFilterByRating_ShouldReturnFilteredResults() throws Exception {
-        String searchQuery = "2"; // Only matches title 2
-        Integer filterByRating = 1; // Matches title 1 and title 2
+        String searchQuery = "2"; // Only matches "title 2"
+        Integer filterByRating = 1; // Matches "title 1" and "title 2"
 
         mockMvc.perform(get("/user-games")
                         .param("filterByRating", String.valueOf(filterByRating))
@@ -467,7 +466,7 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_SearchAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
-        String searchQuery = "he"; // Witcher and valheim
+        String searchQuery = "he"; // Matches "The Witcher 3" and "Valheim"
         String sortBy = "title";
 
         mockMvc.perform(get("/user-games")
@@ -480,7 +479,7 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("searchQuery", searchQuery))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(2)))
-                .andExpect(model().attribute("userGames", contains(
+                .andExpect(model().attribute("userGames", contains( // A-Z
                         hasProperty("title", is("The Witcher 3")),
                         hasProperty("title", is("Valheim"))
                 )));
@@ -489,10 +488,8 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_FilterByRatingAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
-
-        String searchQuery = "developer"; // Only matches title 2
         String sortBy = "title";
-        Integer filterByRating = 1; // Matches title 1 and title 2
+        Integer filterByRating = 1; // Matches "Title 1" and "Title 2"
 
         mockMvc.perform(get("/user-games")
                         .param("sortBy", sortBy)
@@ -517,11 +514,11 @@ public class UserGameIntegrationTest {
         add.setGame(games.get(5));
         add.setNote("game 3");
         add.setRating(1);
-        userGameRepository.save(add);
+        userGameRepository.save(add); // Add new game to user's list
 
-        String searchQuery = "developer";
+        String searchQuery = "developer"; // Matches "developer 1", "developer 2" and "developer 3"
         String sortBy = "title";
-        Integer filterByRating = 1;
+        Integer filterByRating = 1; // Matches "Title 1", "Title 2" and "Title 3"
 
         mockMvc.perform(get("/user-games")
                         .param("sortBy", sortBy)
@@ -534,8 +531,8 @@ public class UserGameIntegrationTest {
                 .andExpect(model().attribute("sortBy", sortBy))
                 .andExpect(model().attribute("filterByRating", filterByRating))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("userGames", hasSize(3))) // title 1, title 2 and title 3 match filters
-                .andExpect(model().attribute("userGames", contains(
+                .andExpect(model().attribute("userGames", hasSize(3)))
+                .andExpect(model().attribute("userGames", contains( // Sorted A-Z
                         hasProperty("title", is("Title 1")),
                         hasProperty("title", is("Title 2")),
                         hasProperty("title", is("Title 3"))
@@ -545,8 +542,8 @@ public class UserGameIntegrationTest {
     @Test
     public void userGamesPage_SearchSortAndFilterByRating_EmptyResults_ShouldReturnEmpty() throws Exception {
         String searchQuery = "witcher"; // Matches "Witcher 3"
-        String sortBy = "title"; // Sorts by title
-        Integer filterByRating = 2; // No games contain witcher that are rating 2
+        String sortBy = "title";
+        Integer filterByRating = 2; // No games contain witcher that have a rating of 2
 
         mockMvc.perform(get("/user-games")
                         .param("sortBy", sortBy)

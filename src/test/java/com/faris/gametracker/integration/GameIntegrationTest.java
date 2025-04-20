@@ -22,7 +22,6 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,16 +56,16 @@ public class GameIntegrationTest {
 
 
     /**
-     * Creates a list of games with a size based on passed in value
+     * Creates a List of games with a size based on passed in integer
      *
      * @param j The size of the list of games that will be returned
-     * @return
+     * @return List of games, containing j games
      */
     private List<Game> createGamesList(int j) {
         List<Game> games = new ArrayList<>();
         for (int i = 0; i < j; i++) {
             games.add(
-                    new Game("url","Title", LocalDate.of(2025, Month.JANUARY, 1),"Developer","Publisher")
+                    new Game("url", "Title", LocalDate.of(2025, Month.JANUARY, 1), "Developer", "Publisher")
             );
         }
         return games;
@@ -79,12 +78,12 @@ public class GameIntegrationTest {
                 .andExpect(view().name("games"))
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("games", hasSize(3)));
+                .andExpect(model().attribute("games", hasSize(3))); // 3 games in database
     }
 
     @Test
     public void gamesPage_InvalidPage_ShouldReturnEmpty() throws Exception {
-        mockMvc.perform(get("/games").param("page", "10"))
+        mockMvc.perform(get("/games").param("page", "10")) // Page 10 doesn't exist
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("games", hasSize(0)));
     }
@@ -104,7 +103,7 @@ public class GameIntegrationTest {
         mockMvc.perform(get("/games").param("page", "1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("games"))
-                .andExpect(model().attribute("games", hasSize(5))); // 23 games, 18 per page, so second page should be 5
+                .andExpect(model().attribute("games", hasSize(5))); // 23 games, 18 per page, so second page should contain 5
     }
 
     @Test
@@ -113,7 +112,7 @@ public class GameIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", "witcher"))
-                .andExpect(model().attribute("games", hasSize(1))); // 1 game match
+                .andExpect(model().attribute("games", hasSize(1))); // 1 game contains witcher as substring
     }
 
     @Test
@@ -122,16 +121,16 @@ public class GameIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", "terraria"))
-                .andExpect(model().attribute("games", hasSize(0))); // No games match
+                .andExpect(model().attribute("games", hasSize(0))); // No games contain terraria as substring
     }
 
     @Test
     public void gamesPage_SearchBlank_ShouldReturnAllGames() throws Exception {
-        mockMvc.perform(get("/games").param("searchQuery", ""))
+        mockMvc.perform(get("/games").param("searchQuery", "")) // Empty string
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", ""))
-                .andExpect(model().attribute("games", hasSize(3))); // No games match
+                .andExpect(model().attribute("games", hasSize(3))); // No filter applied, show all games
     }
 
     @Test
@@ -140,7 +139,7 @@ public class GameIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("showFilter", "inList"))
-                .andExpect(model().attribute("games", hasSize(1))); // Should return 1 game, witcher
+                .andExpect(model().attribute("games", hasSize(1))); // Returns only game on list: The witcher 3
     }
 
     @Test
@@ -149,7 +148,7 @@ public class GameIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("showFilter", "notInList"))
-                .andExpect(model().attribute("games", hasSize(2))); // Should return 2 games not in user's list
+                .andExpect(model().attribute("games", hasSize(2))); // Returns 2 games not in list
     }
 
     @Test
@@ -158,7 +157,7 @@ public class GameIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("showFilter", "testFilterOption"))
-                .andExpect(model().attribute("games", hasSize(3))); // Should return original list no filter
+                .andExpect(model().attribute("games", hasSize(3))); // Returns all games, no filter applied
     }
 
     @Test
@@ -168,7 +167,7 @@ public class GameIntegrationTest {
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("sortBy", "title"))
                 .andExpect(model().attribute("games", hasSize(3)))
-                .andExpect(model().attribute("games", contains( // Make sure games are ordered
+                .andExpect(model().attribute("games", contains( // Games are ordered A-Z
                         hasProperty("title", is("Elden Ring")),
                         hasProperty("title", is("The Witcher 3")),
                         hasProperty("title", is("Valheim"))
@@ -225,7 +224,7 @@ public class GameIntegrationTest {
     @Test
     public void gamesPage_SortByAndSearch_ShouldReturnSortedAndFilteredResults() throws Exception {
         mockMvc.perform(get("/games")
-                        .param("searchQuery", "he") // Matches "witcHEr" and "valHEim"
+                        .param("searchQuery", "he") // Matches "witcher" and "valheim"
                         .param("sortBy", "releaseDate"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
@@ -241,24 +240,24 @@ public class GameIntegrationTest {
     @Test
     public void gamesPage_SearchAndShowFilter_ShouldReturnSortedAndFilteredResults() throws Exception {
         mockMvc.perform(get("/games")
-                .param("searchQuery", "he") // Matches "witcHEr" and "valHEim"
-                .param("showFilter", "notInList"))
+                        .param("searchQuery", "he") // Matches "witcher" and "valheim"
+                        .param("showFilter", "notInList"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", "he"))
                 .andExpect(model().attribute("showFilter", "notInList"))
                 .andExpect(model().attribute("games", hasSize(1)))
                 .andExpect(model().attribute("games", contains(
-                        hasProperty("title", is("Valheim")) // Contains he and is not in list
+                        hasProperty("title", is("Valheim")) // Contains "he" and is not in list
                 )));
     }
 
     @Test
     public void gamesPage_SearchSortByAndShowFilter_ShouldReturnSortedAndFilteredResults() throws Exception {
         mockMvc.perform(get("/games")
-                .param("searchQuery", "e") // Matches all 3 games
-                .param("sortBy", "releaseDate")
-                .param("showFilter", "notInList")) // Elden ring and Valheim
+                        .param("searchQuery", "e") // Matches all 3 games
+                        .param("sortBy", "releaseDate")
+                        .param("showFilter", "notInList")) // Elden ring and Valheim not in list
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", "e"))
@@ -274,9 +273,9 @@ public class GameIntegrationTest {
     @Test
     public void gamesPage_SearchSortByAndShowFilter_EmptyResults_ShouldReturnEmpty() throws Exception {
         mockMvc.perform(get("/games")
-                .param("searchQuery", "witcher") // 1 result
-                .param("sortBy", "releaseDate")
-                .param("showFilter", "notInList")) //No matches
+                        .param("searchQuery", "witcher") // 1 result
+                        .param("sortBy", "releaseDate")
+                        .param("showFilter", "notInList")) // No matches
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attribute("searchQuery", "witcher"))
