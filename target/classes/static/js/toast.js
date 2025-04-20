@@ -18,7 +18,7 @@ function showToast(message, type, title, icon) {
             </div>
         </div>
     `; // Replace the html in the toast container to current html
-    const toastElement = document.querySelector('.toast'); // Select the toast
-    const toast = new bootstrap.Toast(toastElement); // Let bootstrap know the container is a toast
+    const toastElement = document.querySelector('.toast'); // Select the toast element
+    const toast = new bootstrap.Toast(toastElement); // Create the toast
     toast.show() // Show the toast, applying the animations/fade-in etc
 }

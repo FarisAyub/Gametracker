@@ -1,7 +1,9 @@
+<!-- Takes in form submission type, boolean for showing delete user game button and a string for the submit button text -->
 <div th:fragment="modal(method, showDelete, submitText)">
     <div aria-hidden="true" aria-labelledby="gameModalLabel" class="modal" id="gameModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
+                <!-- Image of the game -->
                 <div class="modal-header no-pad">
                     <img alt="Could not load image" class="modal-image" id="modal-image" src="">
                 </div>
@@ -10,7 +12,7 @@
                     <form action="#" id="gameForm" method="post">
                         <input name="_method" th:if="${method != null}" th:value="${method}" type="hidden">
                         <input id="gameId" name="gameId" type="hidden">
-
+                        <!-- Input for rating of the game -->
                         <label for="rating">Rating</label>
                         <div class="input-group mb-3">
                             <input class="form-control" id="rating" max="5" maxlength="1" min="1" name="rating"
@@ -18,6 +20,7 @@
                             <span class="input-group-text" id="basic-addon2"><i
                                     class="fa-solid fa-star text-warning"></i></span>
                         </div>
+                        <!-- Input for note for the game -->
                         <div class="form-group">
                             <label for="note">Note</label>
                             <textarea class="form-control" id="note" maxlength="255" name="note" placeholder="Describe your experience with the game"

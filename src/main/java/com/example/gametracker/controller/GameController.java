@@ -4,6 +4,10 @@ import com.example.gametracker.model.Game;
 import com.example.gametracker.model.UserGame;
 import com.example.gametracker.repository.GameRepository;
 import com.example.gametracker.repository.UserGameRepository;
+import com.example.gametracker.service.GameApiService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +26,12 @@ public class GameController {
 
     private final GameRepository gameRepository;
     private final UserGameRepository userGameRepository;
+    private final GameApiService gameApiService;
 
-    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository) {
+    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService) {
         this.gameRepository = gameRepository;
         this.userGameRepository = userGameRepository;
+        this.gameApiService = gameApiService;
     }
 
     /**
@@ -47,37 +53,28 @@ public class GameController {
                               @RequestParam(required = false, defaultValue = "18") Integer size,
                               Model model) {
 
-        List<Game> games = gameRepository.findAll();
-        List<UserGame> userGames = userGameRepository.findAll();
+        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
+        Page<Game> gamesPage = gameRepository.findAll(pageable); // Filters current page of games
+        List<Game> games = gamesPage.getContent();
 
-        // Create a set of Game id's that contains all the game id's on the users list, used to tag games already on the users list
+        // Get all user games and create a set containing the id of each
+        List<UserGame> userGames = userGameRepository.findAll();
         Set<Long> userGameIds = userGames.stream().map(userGame -> userGame.getGame().getId()).collect(Collectors.toSet());
 
         games = filterBySearch(games, searchQuery);
         games = sortGames(games, sortBy);
         games = filterByInList(games, showFilter, userGameIds);
 
-        // Filter the list into pages
-        int start = page * size; // Take current page and multiply by amount of games per page to find the start index for next page
-        int end = Math.min(start + size, games.size()); // Take the start index and add the size of page, using math.min in case there's not enough games for full page
-
-        // Create a new list that's a sublist of games showing the amount of games per page requested
-        List<Game> pagedGames = games.subList(start, end);
-
-        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
-        boolean hasNext = end < games.size();
-        boolean hasPrevious = page > 0;
-
         // Values returned to the html, pass back the search query, sort type and list of games, these
         // are used to make sure the filter option selected doesn't reset, as we pass these back and then set the filters to what they were previously.
         model.addAttribute("searchQuery", searchQuery);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("showFilter", showFilter);
-        model.addAttribute("games", pagedGames);
+        model.addAttribute("games", games);
         model.addAttribute("userGameIds", userGameIds);
         model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", hasNext);
-        model.addAttribute("hasPrevious", hasPrevious);
+        model.addAttribute("hasNext", gamesPage.hasNext());
+        model.addAttribute("hasPrevious", gamesPage.hasPrevious());
         return "games";
     }
 

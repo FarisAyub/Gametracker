@@ -14,6 +14,10 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -24,6 +28,7 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -47,12 +52,14 @@ public class UserGameControllerTest {
     @InjectMocks
     private UserGameController userGameController;
 
-    private UserGameRequest request; // Create an user game request to reinitialise and assign values before each test
+    private UserGameRequest request; // Create user game request to reinitialise and assign values before each test
 
     private List<UserGame> userGames;
 
     @Autowired
     private ObjectMapper objectMapper; // To convert java to JSON for http requests like post
+
+    private Pageable pageable;
 
     @BeforeEach
     public void setup() {
@@ -68,16 +75,15 @@ public class UserGameControllerTest {
                 new UserGame(new Game("url", "Elden Ring", LocalDate.of(2005, Month.FEBRUARY, 6), "FromSoftware", "FS"), 4, "Great"),
                 new UserGame(new Game("url", "Valheim", LocalDate.of(2002, Month.JANUARY, 7), "Iron Gate", "IG"), 3, "Okay")
         );
+        pageable = PageRequest.of(0, 9); // Same page/size as controller
+
     }
 
     @Test
     public void getAllUserGames_ShouldReturnUserGameAndAllAttributes() throws Exception {
-        Game game = new Game("url", "The Witcher 3", LocalDate.of(2001, Month.JANUARY, 15), "CD Projekt Red", "CD Projekt Red");
-        game.setId(1L);
-        UserGame userGame = new UserGame(game, 5, "Great!");
-        userGame.setId(1L);
+        Page<UserGame> pageOfUserGames = new PageImpl<>(userGames, pageable, userGames.size()); // Page containing our mock data
 
-        when(userGameRepository.findAll()).thenReturn(List.of(userGame));
+        when(userGameRepository.findAll(any(Pageable.class))).thenReturn(pageOfUserGames); // When findAll is called return our mock
 
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk())
@@ -124,10 +130,9 @@ public class UserGameControllerTest {
 
     @Test
     public void addUserGame_NoteNotValid_ShouldReturnBadRequest() throws Exception {
-        // Test note using lorem ipsum that is 256 characters
-        String testNote = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,.";
+        String testNote = "A".repeat(256); // creates a string larger than 255 characters
 
-        request.setNote(testNote); // Note is larger than 256 characters
+        request.setNote(testNote); // Note is larger than 255 characters
 
         when(gameRepository.findById(request.getGameId())).thenReturn(Optional.of(new Game())); // Simulate game with id exists
 
@@ -233,10 +238,10 @@ public class UserGameControllerTest {
     @Test
     public void updateUserGame_NoteNotValid_ShouldReturnBadRequest() throws Exception {
         long id = 1L;
-        String testNote = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis,.";
+        String testNote = "A".repeat(256); // Creates a string larger than 255 characters
 
         request.setGameId(id);
-        request.setNote(testNote); // Note is 256 characters, validation requires 255 max
+        request.setNote(testNote); // Note is larger than 255 characters
 
         when(userGameRepository.findById(request.getGameId())).thenReturn(Optional.of(new UserGame())); // id exists in user games list
 

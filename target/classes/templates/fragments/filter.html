@@ -3,8 +3,7 @@
         <div class="row gx-1 w-100">
             <!-- Search -->
             <div class="col-md-7">
-                <input class="form-control w-100" name="searchQuery" placeholder="Search..." th:value="${searchQuery}"
-                       type="text">
+                <input class="form-control w-100" name="searchQuery" placeholder="Search..." th:value="${searchQuery}" type="text">
             </div>
             <!-- Sort -->
             <div class="col-md-2">
@@ -25,16 +24,14 @@
             </div>
             <!-- Filter by rating -->
             <div class="col-md-2" th:if="${userGames}">
-                <label>
-                    <select class="form-select w-100" name="filterByRating">
-                        <option th:selected="${filterByRating == null}" th:value="-1">Rating</option>
-                        <option th:selected="${filterByRating == 5}" th:value="5">5 Stars</option>
-                        <option th:selected="${filterByRating == 4}" th:value="4">4 Stars</option>
-                        <option th:selected="${filterByRating == 3}" th:value="3">3 Stars</option>
-                        <option th:selected="${filterByRating == 2}" th:value="2">2 Stars</option>
-                        <option th:selected="${filterByRating == 1}" th:value="1">1 Stars</option>
-                    </select>
-                </label>
+                <select class="form-select w-100" name="filterByRating">
+                    <option th:selected="${filterByRating == null}" th:value="-1">Rating</option>
+                    <option th:selected="${filterByRating == 5}" th:value="5">5 Stars</option>
+                    <option th:selected="${filterByRating == 4}" th:value="4">4 Stars</option>
+                    <option th:selected="${filterByRating == 3}" th:value="3">3 Stars</option>
+                    <option th:selected="${filterByRating == 2}" th:value="2">2 Stars</option>
+                    <option th:selected="${filterByRating == 1}" th:value="1">1 Stars</option>
+                </select>
             </div>
             <!-- Submit filter form -->
             <div class="col-md-1">

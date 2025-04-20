@@ -8,11 +8,11 @@
 		<version>3.4.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
+	<groupId>com.faris</groupId>
 	<artifactId>gametracker</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>GameTracker</name>
-	<description>Demo project for Spring Boot</description>
+	<version>1.0</version>
+	<name>Game Tracker</name>
+	<description>A personal game tracking app</description>
 	<url/>
 	<licenses>
 		<license/>

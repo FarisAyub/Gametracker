@@ -8,6 +8,9 @@ import com.example.gametracker.repository.GameRepository;
 import com.example.gametracker.repository.UserGameRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -55,26 +58,38 @@ public class UserGameController {
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
 
-        List<UserGame> allUserGames = userGameRepository.findAll();
-        List<UserGameResponse> dtoUserGames = new ArrayList<>(); // Array using dto
+        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
+        Page<UserGame> userGamesPage = userGameRepository.findAll(pageable); // Filters results using pageable 
+        List<UserGame> allUserGames = userGamesPage.getContent();
 
         allUserGames = filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
         allUserGames = filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
         allUserGames = sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
 
-        // Filter the list into pages by setting a start and end index for the current page
-        int start = page * size; // Get the current index for the new page
-        int end = Math.min(start + size, allUserGames.size()); // Get the last game for the current page, checking the size to return a smaller list if not enough left
+        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(allUserGames);
 
-        // Create a new list that's a sublist of games showing the amount of games per page requested
-        List<UserGame> pagedGames = allUserGames.subList(start, end);
+        // Returns everything back to the template in thymeleaf
+        model.addAttribute("userGames", dtoUserGames);
+        model.addAttribute("searchQuery", searchQuery);
+        model.addAttribute("sortBy", sortBy);
+        model.addAttribute("filterByRating", filterByRating);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNext", userGamesPage.hasNext());
+        model.addAttribute("hasPrevious", userGamesPage.hasPrevious());
+        return "user-games";
+    }
 
-        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
-        boolean hasNext = end < allUserGames.size();
-        boolean hasPrevious = page > 0;
+    /**
+     * Converts a list of user games into a list of user game response, which contains fields for both the game details
+     * and the user's game details like rating and note
+     *
+     * @param allUserGames A list of UserGames to be converted into dto UserGameResponse
+     * @return List of UserGameResponse which contains fields related to both the game and user game
+     */
+    private static List<UserGameResponse> convertToUserGameResponse(List<UserGame> allUserGames) {
+        List<UserGameResponse> list = new ArrayList<>(); // List using dto to store each game with additional info
 
-        // For each object in our users games list, create DTO object from both the game and user game variables
-        for (UserGame userGame : pagedGames) {
+        for (UserGame userGame : allUserGames) {
             UserGameResponse userGameResponse = new UserGameResponse(
                     userGame.getId(),
                     userGame.getGame().getUrl(),
@@ -85,17 +100,9 @@ public class UserGameController {
                     userGame.getRating(),
                     userGame.getNote()
             );
-            dtoUserGames.add(userGameResponse); // Add new DTO object to our new list
+            list.add(userGameResponse); // Add new each UserGameResponse to the list
         }
-        // Returns everything back to the template in thymeleaf
-        model.addAttribute("userGames", dtoUserGames);
-        model.addAttribute("searchQuery", searchQuery);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("filterByRating", filterByRating);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", hasNext);
-        model.addAttribute("hasPrevious", hasPrevious);
-        return "user-games";
+        return list;
     }
 
 
@@ -203,7 +210,7 @@ public class UserGameController {
      * @return filtered list, or the original list if no rating was set
      */
     public List<UserGame> filterByRating(List<UserGame> games, Integer rating) {
-        if (rating == null || rating == -1)
+        if (rating == null || rating == -1 || rating > 5)
             return games; // Exit case if rating was not set (we pass -1 value for the "no rating" option
 
         games = games.stream().filter(game -> game.getRating() == rating).collect(Collectors.toList());
