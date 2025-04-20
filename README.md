@@ -2,6 +2,23 @@
 
 A Spring Boot web application that allows users to browse a database of video games and track which games they've completed. Users can add games to their list, rate them, and leave notes.
 
+## Setup
+
+Ensure **Java 17** or higher installed  
+
+#### 1. Clone the repository
+
+```bash
+git clone https://github.com/FarisAyub/Gametracker.git
+cd Gametracker
+```
+#### 2. Build project using Maven and run it
+```bash
+./mvnw clean package
+java -jar target/gametracker-1.0.jar
+```
+#### You should now be able to access the app at http://localhost:8080
+
 ## Features
 
 - Browse a database of video games
