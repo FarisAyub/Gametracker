@@ -2,31 +2,31 @@
     <form class="form-inline my-3" method="get" th:action="@{${url}}">
         <div class="row gx-1 w-100">
             <!-- Search -->
-            <div class="col-md-7">
-                <input class="form-control w-100" name="searchQuery" placeholder="Search..." th:value="${searchQuery}"
+            <div class="col-md">
+                <input class="form-control w-100 styled-input" name="searchQuery" placeholder="Search..." th:value="${searchQuery}"
                        type="text">
             </div>
             <!-- Sort -->
-            <div class="col-md-2">
-                <select class="form-select w-100" name="sortBy">
-                    <option th:selected="${sortBy == null}" th:value="''">Sort By</option>
+            <div class="col-md-auto">
+                <select class="form-select w-100 styled-input" name="sortBy">
+                    <option th:selected="${sortBy == null}" th:value="''" class="text-muted">Sort By</option>
                     <option th:selected="${sortBy == 'title'}" th:value="title">Title</option>
                     <option th:selected="${sortBy == 'releaseDate'}" th:value="releaseDate">Release Date</option>
                     <option th:if="${userGames}" th:selected="${sortBy == 'rating'}" th:value="rating">Rating</option>
                 </select>
             </div>
             <!-- Filter by game's user already has on their list -->
-            <div class="col-md-2" th:if="${!userGames}">
-                <select class="form-select w-100" name="showFilter">
-                    <option th:selected="${showFilter == null}" th:value="''">All</option>
-                    <option th:selected="${showFilter == 'inList'}" th:value="inList">In my collection</option>
-                    <option th:selected="${showFilter == 'notInList'}" th:value="notInList">Not in collection</option>
+            <div class="col-md-auto" th:if="${!userGames}">
+                <select class="form-select w-100 styled-input" name="showFilter">
+                    <option th:selected="${showFilter == null}" th:value="''" class="text-muted">All</option>
+                    <option th:selected="${showFilter == 'inList'}" th:value="inList">In list</option>
+                    <option th:selected="${showFilter == 'notInList'}" th:value="notInList">Not in list</option>
                 </select>
             </div>
             <!-- Filter by rating -->
-            <div class="col-md-2" th:if="${userGames}">
-                <select class="form-select w-100" name="filterByRating">
-                    <option th:selected="${filterByRating == null}" th:value="-1">Rating</option>
+            <div class="col-md-auto" th:if="${userGames}">
+                <select class="form-select w-100 styled-input" name="filterByRating">
+                    <option th:selected="${filterByRating == null}" th:value="-1" class="text-muted">Rating</option>
                     <option th:selected="${filterByRating == 5}" th:value="5">5 Stars</option>
                     <option th:selected="${filterByRating == 4}" th:value="4">4 Stars</option>
                     <option th:selected="${filterByRating == 3}" th:value="3">3 Stars</option>

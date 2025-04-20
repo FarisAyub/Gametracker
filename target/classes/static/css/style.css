@@ -75,7 +75,7 @@ body {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    z-index: 1050; /* Ensure it's on top of other elements */
+    z-index: 1060; /* Ensure it's on top of other elements, 1050 is modal, so above all */
     animation: fadeInUp 0.3s ease-out; /* Fade-in */
 }
 
@@ -120,5 +120,22 @@ body {
 /* Make star icons for rating larger */
 .stars i {
     font-size: 1.5rem;
+    padding-bottom: 0.5rem;
 }
 
+/* Styling for inputs, used on filters/sorting */
+.styled-input {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+    background-color: #fff;
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* When in focus, apply shadow and other styling */
+.styled-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    outline: none;
+}
