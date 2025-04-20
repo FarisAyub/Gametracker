@@ -44,7 +44,21 @@ A Spring Boot web application that allows users to browse a database of video ga
 
 ## Screenshots
 
-+ To be added
+
+### All Games View  
+![All Games](screenshots/all-games.png)
+
+### User Game List  
+![User Games](screenshots/user-games.png)
+
+### Toast Notification (Success)  
+![Toast Success](screenshots/toast-success.png)
+
+### Toast Notification (Warning)  
+![Toast Warning](screenshots/toast-warning.png)
+
+### Toast Notification (Error)  
+![Toast Error](screenshots/toast-error.png)
 
 ## About
 Created By: Faris Ayub
