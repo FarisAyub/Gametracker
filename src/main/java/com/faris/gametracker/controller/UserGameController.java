@@ -8,9 +8,6 @@ import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -18,10 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -84,15 +78,32 @@ public class UserGameController {
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
 
-        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
-        Page<UserGame> userGamesPage = userGameRepository.findAll(pageable); // Filters results using pageable
-        List<UserGame> allUserGames = userGamesPage.getContent();
+        List<UserGame> allUserGames = userGameRepository.findAll();
 
         allUserGames = filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
         allUserGames = filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
         allUserGames = sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
 
-        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(allUserGames);
+
+        // Create pointers for pagination
+        int start = page * size; // Take current page multiplied by games per page to find the start index for this page
+        int end = Math.min(start + size, allUserGames.size()); // Set end index to start index + amount per page, returning lower if there's not enough left in list
+
+        // List to contain our current page of games
+        List<UserGame> pageOfGames;
+        if (start >= allUserGames.size()) {
+            // If the page is out of bounds, return an empty page
+            pageOfGames = Collections.emptyList();
+        } else {
+            // Create a new list that's a sublist of games containing passed in size amount of games
+            pageOfGames = allUserGames.subList(start, end);
+        }
+
+        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
+        boolean hasNext = end < allUserGames.size();
+        boolean hasPrevious = page > 0;
+
+        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(pageOfGames);
 
         // Returns everything back to the template in thymeleaf
         model.addAttribute("userGames", dtoUserGames);
@@ -100,8 +111,8 @@ public class UserGameController {
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("filterByRating", filterByRating);
         model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", userGamesPage.hasNext());
-        model.addAttribute("hasPrevious", userGamesPage.hasPrevious());
+        model.addAttribute("hasNext", hasNext);
+        model.addAttribute("hasPrevious", hasPrevious);
         return "user-games";
     }
 

@@ -12,18 +12,14 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,8 +45,6 @@ public class GameControllerTest {
 
     private Set<Long> userGameIds;
 
-    private Pageable pageable;
-
     @BeforeEach
     public void setup() {
         games = Arrays.asList(
@@ -63,17 +57,14 @@ public class GameControllerTest {
         games.get(1).setId(2L);
         games.get(2).setId(5L);
         userGameIds = new HashSet<>(Arrays.asList(1L, 2L, 3L)); // Set that tracks the id's of games on the user's list (only 2 from our games list)
-        pageable = PageRequest.of(0, 18); // Same default page/size as controller
     }
 
     @Test
     public void getAllGames_ShouldReturnGamesAndAttributes() throws Exception {
-        Page<Game> pageOfGames = new PageImpl<>(games, pageable, games.size()); // Return page containing the 3 games
-
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames); // When findAll is called, return pageOfGames
+        when(gameRepository.findAll()).thenReturn(games); // When findAll is called, return games
         when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // Return empty list
 
-        mockMvc.perform(get("/games"))
+        mockMvc.perform(get("/games").param("page", "0").param("size", "18"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("games"))
                 .andExpect(model().attributeExists("games"))
@@ -86,9 +77,7 @@ public class GameControllerTest {
 
     @Test
     public void getAllGames_EmptyLists_ShouldStillReturnGamesView() throws Exception {
-        Page<Game> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0); // Empty page
-
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(emptyPage); // When findall is called, return empty Page
+        when(gameRepository.findAll()).thenReturn(Collections.emptyList()); // When findall is called, return empty list
         when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // Return empty list
 
         mockMvc.perform(get("/games"))
@@ -109,9 +98,7 @@ public class GameControllerTest {
 
     @Test
     public void getAllGames_WithOptionalSearchSortAndFilter_ShouldReturnFilteredGames() throws Exception {
-        Page<Game> pageOfGames = new PageImpl<>(games, pageable, games.size());
-
-        when(gameRepository.findAll(any(Pageable.class))).thenReturn(pageOfGames); // When findall, return Page
+        when(gameRepository.findAll()).thenReturn(games); // When findall, return our games list
 
         UserGame userGame = new UserGame(games.get(0), 5, "Great!");
         List<UserGame> userGames = List.of(userGame);
@@ -132,7 +119,8 @@ public class GameControllerTest {
                 .andExpect(model().attributeExists("userGameIds"))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("hasNext", false))
-                .andExpect(model().attribute("hasPrevious", false));
+                .andExpect(model().attribute("hasPrevious", false))
+                .andExpect(model().attribute("games", hasSize(1)));
 
     }
 

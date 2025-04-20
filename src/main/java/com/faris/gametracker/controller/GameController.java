@@ -5,19 +5,13 @@ import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import com.faris.gametracker.service.GameApiService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -53,28 +47,46 @@ public class GameController {
                               @RequestParam(required = false, defaultValue = "18") Integer size,
                               Model model) {
 
-        Pageable pageable = PageRequest.of(page, size); // Create a pageable using passed in page and size
-        Page<Game> gamesPage = gameRepository.findAll(pageable); // Filters current page of games
-        List<Game> games = gamesPage.getContent();
-
-        // Get all user games and create a set containing the id of each
+        // Get all games and user games
+        List<Game> games = gameRepository.findAll();
         List<UserGame> userGames = userGameRepository.findAll();
+
+        // Create a Set of ID's for every entry in userGames
         Set<Long> userGameIds = userGames.stream().map(userGame -> userGame.getGame().getId()).collect(Collectors.toSet());
 
+        // Filter and sort
         games = filterBySearch(games, searchQuery);
         games = sortGames(games, sortBy);
         games = filterByInList(games, showFilter, userGameIds);
+
+        // Create pointers for pagination
+        int start = page * size; // Take current page multiplied by games per page to find the start index for this page
+        int end = Math.min(start + size, games.size()); // Take the start index and add the size of page, using math.min in case there's not enough games for full page
+
+        // List to contain our current page of games
+        List<Game> pageOfGames;
+        if (start >= games.size()) {
+            // If the page is out of bounds, return an empty list
+            pageOfGames = Collections.emptyList();
+        } else {
+            // Create a new list that's a sublist containing 1 page of games, using start and end index
+            pageOfGames = games.subList(start, end);
+        }
+
+        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
+        boolean hasNext = end < games.size();
+        boolean hasPrevious = page > 0;
 
         // Values returned to the html, pass back the search query, sort type and list of games, these
         // are used to make sure the filter option selected doesn't reset, as we pass these back and then set the filters to what they were previously.
         model.addAttribute("searchQuery", searchQuery);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("showFilter", showFilter);
-        model.addAttribute("games", games);
+        model.addAttribute("games", pageOfGames);
         model.addAttribute("userGameIds", userGameIds);
         model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", gamesPage.hasNext());
-        model.addAttribute("hasPrevious", gamesPage.hasPrevious());
+        model.addAttribute("hasNext", hasNext);
+        model.addAttribute("hasPrevious", hasPrevious);
         return "games";
     }
 

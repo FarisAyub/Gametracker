@@ -14,10 +14,6 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -28,7 +24,6 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -59,8 +54,6 @@ public class UserGameControllerTest {
     @Autowired
     private ObjectMapper objectMapper; // To convert java to JSON for http requests like post
 
-    private Pageable pageable;
-
     @BeforeEach
     public void setup() {
         // Request to be passed as JSON for http requests
@@ -75,15 +68,11 @@ public class UserGameControllerTest {
                 new UserGame(new Game("url", "Elden Ring", LocalDate.of(2005, Month.FEBRUARY, 6), "FromSoftware", "FS"), 4, "Great"),
                 new UserGame(new Game("url", "Valheim", LocalDate.of(2002, Month.JANUARY, 7), "Iron Gate", "IG"), 3, "Okay")
         );
-        pageable = PageRequest.of(0, 9); // Same page/size as controller
-
     }
 
     @Test
     public void getAllUserGames_ShouldReturnUserGameAndAllAttributes() throws Exception {
-        Page<UserGame> pageOfUserGames = new PageImpl<>(userGames, pageable, userGames.size()); // Page containing our mock data
-
-        when(userGameRepository.findAll(any(Pageable.class))).thenReturn(pageOfUserGames); // When findAll is called, return Page with mock data
+        when(userGameRepository.findAll()).thenReturn(userGames); // When findAll is called, return userGames
 
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk())
