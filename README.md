@@ -61,7 +61,6 @@ java -jar target/gametracker-1.0.jar
 
 ## Screenshots
 
-
 ### All Games View  
 ![All Games](screenshots/all-games.png)
 
@@ -76,6 +75,9 @@ java -jar target/gametracker-1.0.jar
 
 ### Toast Notification (Error)  
 ![Toast Error](screenshots/toast-error.png)
+
+## License
+This project is for educational purposes only and is not intended for commercial use.
 
 ## About
 Created By: Faris Ayub
