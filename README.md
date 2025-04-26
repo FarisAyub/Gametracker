@@ -58,6 +58,9 @@ java -jar target/gametracker-1.0.jar
 - Dynamic API requests to add specific games, or update the database on demand
 - More game details such as platform and genre tags
 - Customisable UI, such as dark/light themes
+- Add more storage user game details such as completion status, date finished etc
+- Transition from a local game library to directly making requests to the API
+- Potentially multiple different lists for different completion status (complete, quit, currently playing, etc.)
 
 ## Screenshots
 
