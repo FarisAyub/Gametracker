@@ -5,29 +5,27 @@ import com.faris.gametracker.repository.GameRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-class GameApiServiceTest {
+@ExtendWith(MockitoExtension.class)
+public class GameApiServiceTest {
 
     private final ObjectMapper mapper = new ObjectMapper();
+
     @Mock
     private GameRepository gameRepository;
+
     @InjectMocks
     private GameApiService gameApiService;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     public void parseGameFromJson_ShouldReturnGame() {

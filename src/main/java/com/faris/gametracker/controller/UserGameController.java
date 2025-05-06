@@ -6,6 +6,7 @@ import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
+import com.faris.gametracker.service.UserGameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,8 +16,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/user-games")
@@ -24,37 +26,13 @@ public class UserGameController {
 
     private final UserGameRepository userGameRepository;
     private final GameRepository gameRepository;
+    private final UserGameService userGameService;
 
     @Autowired
-    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository) {
+    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService) {
         this.userGameRepository = userGameRepository;
         this.gameRepository = gameRepository;
-    }
-
-    /**
-     * Converts a list of user games into a list of user game response, which contains fields for both the game details
-     * and the user's game details like rating and note
-     *
-     * @param allUserGames A list of UserGames to be converted into dto UserGameResponse
-     * @return List of UserGameResponse which contains fields related to both the game and user game
-     */
-    private static List<UserGameResponse> convertToUserGameResponse(List<UserGame> allUserGames) {
-        List<UserGameResponse> list = new ArrayList<>(); // List using dto to store each game with additional info
-
-        for (UserGame userGame : allUserGames) {
-            UserGameResponse userGameResponse = new UserGameResponse(
-                    userGame.getId(),
-                    userGame.getGame().getUrl(),
-                    userGame.getGame().getTitle(),
-                    userGame.getGame().getDeveloper(),
-                    userGame.getGame().getPublisher(),
-                    userGame.getGame().getReleaseDate(),
-                    userGame.getRating(),
-                    userGame.getNote()
-            );
-            list.add(userGameResponse); // Add new each UserGameResponse to the list
-        }
-        return list;
+        this.userGameService = userGameService;
     }
 
     /**
@@ -80,10 +58,9 @@ public class UserGameController {
 
         List<UserGame> allUserGames = userGameRepository.findAll();
 
-        allUserGames = filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
-        allUserGames = filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
-        allUserGames = sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
-
+        allUserGames = userGameService.filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
+        allUserGames = userGameService.filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
+        allUserGames = userGameService.sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
 
         // Create pointers for pagination
         int start = page * size; // Take current page multiplied by games per page to find the start index for this page
@@ -103,7 +80,7 @@ public class UserGameController {
         boolean hasNext = end < allUserGames.size();
         boolean hasPrevious = page > 0;
 
-        List<UserGameResponse> dtoUserGames = convertToUserGameResponse(pageOfGames);
+        List<UserGameResponse> dtoUserGames = userGameService.convertToUserGameResponse(pageOfGames);
 
         // Returns everything back to the template in thymeleaf
         model.addAttribute("userGames", dtoUserGames);
@@ -194,56 +171,6 @@ public class UserGameController {
         userGameRepository.deleteById(gameId);
         // Return successful message
         return ResponseEntity.ok("Game removed from your list.");
-    }
-
-    /**
-     * Filters a list of UserGame objects based on the string passed in.
-     *
-     * @param games       the list of games to filter
-     * @param searchQuery the string that was searched for
-     * @return filtered list containing only games that contain the searchQuery as a substring in any of its fields
-     */
-    public List<UserGame> filterBySearch(List<UserGame> games, String searchQuery) {
-        if (searchQuery == null || searchQuery.isEmpty()) return games; // Exit case if no search string was set
-        String query = searchQuery.toLowerCase(); // Convert to lower case, so we can ignore capitalisation
-        games = games.stream().filter(game -> game.getGame().getTitle().toLowerCase().contains(query) ||
-                game.getGame().getDeveloper().toLowerCase().contains(query) ||
-                game.getGame().getPublisher().toLowerCase().contains(query)).collect(Collectors.toList());
-        return games;
-    }
-
-    /**
-     * Filters a list of UserGame objects based on the rating passed in.
-     *
-     * @param games  the list of games to filter
-     * @param rating the rating number to filter by values can be 5,4,3,2 and 1
-     * @return filtered list, or the original list if no rating was set
-     */
-    public List<UserGame> filterByRating(List<UserGame> games, Integer rating) {
-        if (rating == null || rating == -1 || rating > 5)
-            return games; // Exit case if rating was not set (we pass -1 value for the "no rating" option
-
-        games = games.stream().filter(game -> game.getRating() == rating).collect(Collectors.toList());
-        return games;
-    }
-
-    /**
-     * Sorts a list of UserGame objects based on the sorting string passed in.
-     *
-     * @param games  the list of games to sort
-     * @param sortBy the sorting criteria which is "title", "releaseDate", and "rating"
-     * @return a new sorted list, or the original list if no sort string was set
-     */
-    public List<UserGame> sortUserGames(List<UserGame> games, String sortBy) {
-        List<UserGame> sorted = new ArrayList<>(games); // Prevents issues with an immutable list
-
-        switch (sortBy != null ? sortBy : "") {
-            case "title" ->
-                    sorted.sort(Comparator.comparing(g -> g.getGame().getTitle(), String.CASE_INSENSITIVE_ORDER));
-            case "releaseDate" -> sorted.sort(Comparator.comparing(g -> g.getGame().getReleaseDate()));
-            case "rating" -> sorted.sort(Comparator.comparing(UserGame::getRating).reversed());
-        }
-        return sorted;
     }
 }
 
