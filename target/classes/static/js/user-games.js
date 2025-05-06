@@ -69,9 +69,14 @@ document.getElementById('submitGameModal').addEventListener('click', function ()
 
                     // Set HTML of stars span, loops creating star icons 1-5 times based on rating
                     stars.innerHTML = '';
-                    for (let i = 0; i < rating; i++) {
+                    for (let i = 0; i < 5; i++) {
+
                         const star = document.createElement('i');
-                        star.classList.add('fa-solid', 'fa-star', 'text-warning');
+                        if (i + 1 <= rating) {
+                            star.classList.add('fa-solid', 'fa-star', 'text-warning');
+                        } else {
+                            star.classList.add('fa-regular', 'fa-star', 'text-warning');
+                        }
                         stars.appendChild(star);
                     }
 

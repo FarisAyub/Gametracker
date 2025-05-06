@@ -3,6 +3,7 @@ package com.faris.gametracker.service;
 import com.faris.gametracker.model.Game;
 import com.faris.gametracker.repository.GameRepository;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -16,6 +17,12 @@ public class GameApiService {
     private final RestTemplate restTemplate;
     private final GameRepository gameRepository;
 
+    @Value("${rawg.api.key}")
+    private String apiKey;
+
+    @Value("${rawg.api.url}")
+    private String apiUrl;
+
     public GameApiService(GameRepository gameRepository, RestTemplate restTemplate) {
         this.gameRepository = gameRepository;
         this.restTemplate = restTemplate;
@@ -26,14 +33,10 @@ public class GameApiService {
         int totalPages = 5;
         int pageSize = 20;
 
-        // Create a string using the api key + the url we want to search
-        String API_KEY = "b2344a674a6546d5aee55ee030e08609";
-        String API_URL = "https://api.rawg.io/api/games";
-
         // Loop through each page adding all games to database
         for (int page = 1; page <= totalPages; page++) {
 
-            String url = API_URL + "?key=" + API_KEY + "&page=" + page + "&page_size=" + pageSize;
+            String url = apiUrl + "?key=" + apiKey + "&page=" + page + "&page_size=" + pageSize;
 
             // Get the data from the url as JSON
             ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
@@ -54,7 +57,7 @@ public class GameApiService {
                 String slug = gameJson.get("slug").asText(); // Use slug which contains name of the current game to search for that game specifically
 
                 // Get the data as JSON
-                String detailUrl = API_URL + "/" + slug + "?key=" + API_KEY; // Make another api call using the specific game, to get more detailed information
+                String detailUrl = apiUrl + "/" + slug + "?key=" + apiKey; // Make another api call using the specific game, to get more detailed information
                 ResponseEntity<JsonNode> detailResponse = restTemplate.getForEntity(detailUrl, JsonNode.class);
                 JsonNode detailedGame = detailResponse.getBody();
 

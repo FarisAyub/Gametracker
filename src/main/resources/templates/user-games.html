@@ -49,6 +49,10 @@
                                 <span th:each="i : ${#numbers.sequence(1, game.rating)}">
                                     <i class="fa-solid fa-star text-warning"></i>
                                 </span>
+                                <!-- For every missing star, show an empty star -->
+                                <span th:if="${game.rating < 5}" th:each="i : ${#numbers.sequence(1, 5 - game.rating)}">
+                                    <i class="fa-regular fa-star text-orange"></i>
+                                </span>
                             </span>
                             <br>
                             <span class="text-muted note" th:text="${game.note}">Notes</span><br>
