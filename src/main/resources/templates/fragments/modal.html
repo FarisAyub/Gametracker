@@ -11,6 +11,7 @@
                     <h5 class="modal-title text-center" id="modal-title">Game</h5>
                     <form action="#" id="gameForm" method="post">
                         <input name="_method" th:if="${method != null}" th:value="${method}" type="hidden">
+                        <input id="csrfToken" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                         <input id="gameId" name="gameId" type="hidden">
                         <!-- Input for rating of the game -->
                         <label for="rating">Rating</label>

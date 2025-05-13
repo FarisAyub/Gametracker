@@ -21,6 +21,7 @@ document.getElementById('submitGameModal').addEventListener('click', function ()
     const gameId = document.getElementById('gameId').value; // ID of game
     const rating = document.getElementById('rating').value; // Rating
     const note = document.getElementById('note').value; // Note
+    const csrfToken = document.getElementById('csrfToken').value; // Get csrf for authentication
 
     if (!validateRatingNote(rating, note)) { // Pass in rating and note, returns false if either doesn't meet validation rules (1-5 rating, 255 char max for note)
         return; // Exits without adding game
@@ -33,7 +34,8 @@ document.getElementById('submitGameModal').addEventListener('click', function ()
         method: 'POST',
         body: JSON.stringify(data), // Pass the data into the body
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken // Include CSRF token in the header
         }
     })
         .then(response => {

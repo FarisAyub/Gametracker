@@ -28,7 +28,7 @@
         <div class="row">
             <!-- Loop creates card for each game -->
             <div class="col-md-4 mb-4" th:each="game : ${games}">
-                <div class="card text-center" data-bs-target="#gameModal" data-bs-toggle="modal"
+                <div class="card card-games text-center" data-bs-target="#gameModal" data-bs-toggle="modal"
                      th:data-bs-game-developer="${game.developer}"
                      th:data-bs-game-id="${game.id}"
                      th:data-bs-game-publisher="${game.publisher}"
@@ -36,8 +36,8 @@
                      th:data-bs-game-title="${game.title}"
                      th:data-bs-url="${game.url}">
                     <img alt="Game image" class="card-img-top" th:src="${game.url}">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${game.title}">Game Title</h5>
+                    <div class="card-body card-games-body">
+                        <h5 class="card-title card-games-title" th:text="${game.title}">Game Title</h5>
                         <p class="card-text">
                             <span th:text="${game.developer}">Developer</span><br>
                             <span th:text="${game.publisher}">Publisher</span><br>
@@ -50,9 +50,6 @@
             </div>
         </div>
 
-        <!-- Pagination fragment -->
-        <th:block th:replace="~{fragments/pagination :: pagination(url='/games', size='18')}"></th:block>
-
         <!-- Modal fragment -->
         <th:block th:replace="~{fragments/modal :: modal(method='POST',showDelete=false,submitText='Add')}"></th:block>
     </div>
@@ -64,8 +61,9 @@
 <!-- Main javascript file for this page -->
 <script th:src="@{js/games.js}"></script>
 <!-- Bootstrap toast, html is replaced and then shown for 3000ms using JS -->
-<div aria-atomic="true" aria-live="polite" class="toast-container position-fixed bottom-0 end-0 p-3"
-     id="toastContainer"></div>
+<div aria-atomic="true" aria-live="polite" class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+<!-- Pagination fragment -->
+<th:block th:replace="~{fragments/pagination :: pagination(url='/games', size='18')}"></th:block>
 <!-- Footer fragment -->
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>

@@ -1,10 +1,14 @@
 package com.faris.gametracker.controller;
 
 import com.faris.gametracker.model.Game;
+import com.faris.gametracker.model.UserAccount;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
+import com.faris.gametracker.repository.UserAccountRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import com.faris.gametracker.service.GameApiService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,12 +24,14 @@ public class GameController {
 
     private final GameRepository gameRepository;
     private final UserGameRepository userGameRepository;
+    private final UserAccountRepository userAccountRepository;
     private final GameApiService gameApiService;
 
-    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService) {
+    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService, UserAccountRepository userAccountRepository) {
         this.gameRepository = gameRepository;
         this.userGameRepository = userGameRepository;
         this.gameApiService = gameApiService;
+        this.userAccountRepository = userAccountRepository;
     }
 
     /**
@@ -40,16 +46,18 @@ public class GameController {
      * @return Returns attributes back to the games page using the model, does not redirect the user
      */
     @GetMapping
-    public String getAllGames(@RequestParam(required = false) String searchQuery,
+    public String getAllGames(@AuthenticationPrincipal UserDetails userDetails,
+                              @RequestParam(required = false) String searchQuery,
                               @RequestParam(required = false) String sortBy,
                               @RequestParam(required = false) String showFilter,
                               @RequestParam(required = false, defaultValue = "0") Integer page,
                               @RequestParam(required = false, defaultValue = "18") Integer size,
                               Model model) {
+        UserAccount user = userAccountRepository.findByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Get all games and user games
+        // Get all games and user games which are on the current user's list
         List<Game> games = gameRepository.findAll();
-        List<UserGame> userGames = userGameRepository.findAll();
+        List<UserGame> userGames = userGameRepository.findByUser(user);
 
         // Create a Set of ID's for every entry in userGames
         Set<Long> userGameIds = userGames.stream().map(userGame -> userGame.getGame().getId()).collect(Collectors.toSet());

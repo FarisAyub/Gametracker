@@ -1,6 +1,7 @@
 package com.faris.gametracker.model;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.userdetails.User;
 
 
 // Controller for the user, tracks all the games that the user has completed with the details of each completion
@@ -14,6 +15,12 @@ public class UserGame {
     // Reference to a game that has been added to the list, non-unique meaning 1 user can have multiple games on their list
     @ManyToOne
     private Game game;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserAccount user;
+
+
     private int rating;
     private String note;
 
@@ -25,10 +32,19 @@ public class UserGame {
      * @param rating A rating integer from 1-5
      * @param note   A note about game, must be less than 255 characters
      */
-    public UserGame(Game game, int rating, String note) {
+    public UserGame(Game game, UserAccount user, int rating, String note) {
         this.game = game;
         this.rating = rating;
         this.note = note;
+        this.user = user;
+    }
+
+    public UserAccount getUser() {
+        return user;
+    }
+
+    public void setUser(UserAccount user) {
+        this.user = user;
     }
 
     public Long getId() {

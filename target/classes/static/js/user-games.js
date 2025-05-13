@@ -21,7 +21,15 @@ modalElement.addEventListener('show.bs.modal', function (event) {
 // When clicking the remove game button, Send DELETE request using game id
 document.getElementById('removeGame').addEventListener('click', function () {
     const gameId = document.getElementById('gameId').value; // Get the game id
-    fetch(`/user-games/${gameId}`, {method: 'DELETE'}) // Send DELETE request with the game id
+    const csrfToken = document.getElementById('csrfToken').value; // Get csrf for authentication
+
+    fetch(`/user-games/${gameId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken // Include CSRF token in the header
+        }
+    }) // Send DELETE request with the game id
         .then(response => {
             if (response.ok) { // If game is deleted from list, show toast
                 showToast("Game deleted", "bg-success text-white", "Success", "<i class=\"fa-solid fa-circle-check fa-xl\" style=\"color: #008000;\"></i>");
@@ -42,6 +50,8 @@ document.getElementById('submitGameModal').addEventListener('click', function ()
     const gameId = document.getElementById('gameId').value; // Game id
     const rating = document.getElementById('rating').value; // Rating
     const note = document.getElementById('note').value; // Note
+    const csrfToken = document.getElementById('csrfToken').value; // Get csrf for authentication
+
 
     // Pass in rating and note, returns false if either doesn't meet validation rules (1-5 rating, 255 char max for note)
     if (!validateRatingNote(rating, note)) {
@@ -55,7 +65,8 @@ document.getElementById('submitGameModal').addEventListener('click', function ()
         method: 'PUT',
         body: JSON.stringify(data), // Pass the data into the body
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken // Include CSRF token in the header
         }
     })
         .then(response => {

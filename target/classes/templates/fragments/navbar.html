@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     <div class="container">
         <a class="navbar-brand" th:href="@{./}">Home</a>
         <div class="collapse navbar-collapse">
@@ -10,6 +10,25 @@
                     <a class="nav-link" th:href="@{/user-games}">My Games</a>
                 </li>
             </ul>
+            <!-- Profile options, only shows if logged in -->
+            <div sec:authorize="isAuthenticated()">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user"></i>&nbsp;
+                        <strong th:text="${#authentication.name}" class="nav-item">Username</strong> <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" th:href="@{/profile}">Profile</a></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button type="submit" class="dropdown-item">Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            </div>
         </div>
     </div>
 </nav>

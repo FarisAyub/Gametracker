@@ -3,14 +3,18 @@ package com.faris.gametracker.controller;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.Game;
+import com.faris.gametracker.model.UserAccount;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
+import com.faris.gametracker.repository.UserAccountRepository;
 import com.faris.gametracker.service.UserGameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -27,12 +31,14 @@ public class UserGameController {
     private final UserGameRepository userGameRepository;
     private final GameRepository gameRepository;
     private final UserGameService userGameService;
+    private final UserAccountRepository userAccountRepository;
 
     @Autowired
-    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService) {
+    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService, UserAccountRepository userAccountRepository) {
         this.userGameRepository = userGameRepository;
         this.gameRepository = gameRepository;
         this.userGameService = userGameService;
+        this.userAccountRepository = userAccountRepository;
     }
 
     /**
@@ -49,6 +55,7 @@ public class UserGameController {
      */
     @GetMapping
     public String getAllUserGames(
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(required = false) String searchQuery,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) Integer filterByRating,
@@ -56,7 +63,9 @@ public class UserGameController {
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
 
-        List<UserGame> allUserGames = userGameRepository.findAll();
+        UserAccount user = userAccountRepository.findByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<UserGame> allUserGames = userGameRepository.findByUser(user);
 
         allUserGames = userGameService.filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
         allUserGames = userGameService.filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
@@ -102,7 +111,13 @@ public class UserGameController {
      */
     @PostMapping
     @ResponseBody
-    public ResponseEntity<String> addUserGame(@RequestBody @Valid UserGameRequest request, BindingResult result) {
+    public ResponseEntity<String> addUserGame(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody @Valid UserGameRequest request, BindingResult result) {
+
+        // User that's currently logged in
+        UserAccount user = userAccountRepository.findByUsername(userDetails.getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+
         if (result.hasErrors()) { // If data validation fails (rating is not 1-5 or note is longer than 255)
             String errorMessage = result.getFieldErrors().get(0).getDefaultMessage();
             return ResponseEntity.badRequest().body("Validation error: " + errorMessage);
@@ -114,11 +129,12 @@ public class UserGameController {
             return ResponseEntity.badRequest().body("Game not found.");
         }
 
-        if (userGameRepository.existsByGameId(request.getGameId())) { // Check if the game is already in the users list, if so don't add
+        if (userGameRepository.existsByGameIdAndUser(request.getGameId(), user)) { // Check if the game is already in the users list, if so don't add
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Game is already in your list.");
         }
 
         UserGame userGame = new UserGame(); // Create a new user game and assign the values to it
+        userGame.setUser(user); // Set the user to current logged in
         userGame.setGame(gameOpt.get()); // Set the game
         userGame.setRating(request.getRating()); // Set the rating
         userGame.setNote(request.getNote()); // Set the note

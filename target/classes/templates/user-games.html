@@ -28,15 +28,15 @@
         <div class="row">
             <!-- Loop creates card for each game -->
             <div class="col-md-4 mb-4" th:each="game : ${userGames}">
-                <div class="card text-center csm" data-bs-target="#gameModal" data-bs-toggle="modal"
+                <div class="card card-games text-center csm" data-bs-target="#gameModal" data-bs-toggle="modal"
                      th:data-bs-game-id="${game.id}"
                      th:data-bs-game-note="${game.note}"
                      th:data-bs-game-rating="${game.rating}"
                      th:data-bs-game-title="${game.title}"
                      th:data-bs-game-url="${game.url}">
                     <img alt="Game image" class="card-img-top" th:src="${game.url}">
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${game.title}">Game Title</h5>
+                    <div class="card-body card-games-body">
+                        <h5 class="card-title card-games-title" th:text="${game.title}">Game Title</h5>
                         <p class="card-text text-muted">
                             <span th:text="${game.developer}">Developer</span><br>
                             <span th:text="${game.publisher}">Publisher</span><br>
@@ -62,12 +62,8 @@
             </div>
         </div>
 
-        <!-- Pagination fragment -->
-        <th:block th:replace="~{fragments/pagination :: pagination(url='/user-games', size='9')}"></th:block>
-
         <!-- Modal fragment -->
-        <th:block
-                th:replace="~{fragments/modal :: modal(method='PUT',showDelete=true,submitText='Update')}"></th:block>
+        <th:block th:replace="~{fragments/modal :: modal(method='PUT',showDelete=true,submitText='Update')}"></th:block>
 
     </div>
 </main>
@@ -80,6 +76,8 @@
 <!-- Bootstrap toast, html is replaced and then shown for 3000ms using JS -->
 <div aria-atomic="true" aria-live="polite" class="toast-container position-fixed bottom-0 right-0 p-3"
      id="toastContainer"></div>
+<!-- Pagination fragment -->
+<th:block th:replace="~{fragments/pagination :: pagination(url='/user-games', size='9')}"></th:block>
 <!-- Footer fragment -->
 <footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
