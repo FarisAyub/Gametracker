@@ -196,7 +196,7 @@ public class UserGameIntegrationTest {
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Game updated."));
+                .andExpect(content().string("Game updated!"));
 
         Optional<UserGame> game = userGameRepository.findById(id); // Get the entry we just updated
         assertEquals(request.getRating(), game.get().getRating()); // Make sure the rating was changed
@@ -238,7 +238,8 @@ public class UserGameIntegrationTest {
         request.setGameId(id);
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Game is not in your list."));
 
         Optional<UserGame> game = userGameRepository.findById(id); // Should return empty optional since game doesn't exist
         assert (game.isEmpty()); // Empty optional
@@ -250,7 +251,8 @@ public class UserGameIntegrationTest {
         request.setGameId(id); // Game doesn't exist with id
 
         mockMvc.perform(put("/user-games/{id}", id).contentType("application/json").content(jsonMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("Game is not in your list."));
 
         Optional<UserGame> game = userGameRepository.findById(id); // Should return empty optional since id doesn't exist
         assert (game.isEmpty()); // Empty optional
@@ -273,7 +275,7 @@ public class UserGameIntegrationTest {
         Long id = 111111L; // Entry doesn't exist
 
         mockMvc.perform(delete("/user-games/{id}", id))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
         assertEquals(5, userGameRepository.findAll().size()); // Size is not changed
     }

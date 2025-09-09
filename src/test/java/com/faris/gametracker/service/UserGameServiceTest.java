@@ -1,107 +1,147 @@
 package com.faris.gametracker.service;
 
+import com.faris.gametracker.dto.UserGameRequest;
+import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
+import com.faris.gametracker.repository.GameRepository;
+import com.faris.gametracker.repository.UserGameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 public class UserGameServiceTest {
 
-    private List<UserGame> userGames;
-
-    @InjectMocks
+    private UserGameRepository userGameRepository;
+    private GameRepository gameRepository;
     private UserGameService userGameService;
+
+    private Game game;
+    private UserGameRequest request;
+    private UserGame existingUserGame;
+    private List<UserGame> userGames;
 
     @BeforeEach
     public void setup() {
-        // Array of user game entries to test sorting and filtering
-        userGames = Arrays.asList(
-                new UserGame(new Game("url", "The Witcher 3", LocalDate.of(2001, Month.MAY, 5), "CD Projekt Red", "CDPR"), 5, "Good"),
-                new UserGame(new Game("url", "Elden Ring", LocalDate.of(2005, Month.FEBRUARY, 6), "FromSoftware", "FS"), 4, "Great"),
-                new UserGame(new Game("url", "Valheim", LocalDate.of(2002, Month.JANUARY, 7), "Iron Gate", "IG"), 3, "Okay")
-        );
+        userGameRepository = mock(UserGameRepository.class);
+        gameRepository = mock(GameRepository.class);
+        userGameService = new UserGameService(userGameRepository, gameRepository);
+
+        // Single game
+        game = new Game("url", "The Witcher 3", LocalDate.of(2001, 5, 5), "CD Projekt Red", "CDPR");
+        game.setId(1L);
+
+        // UserGameRequest
+        request = new UserGameRequest();
+        request.setGameId(1L);
+        request.setRating(5);
+        request.setNote("Great!");
+
+        // Existing UserGame
+        existingUserGame = new UserGame(game, 5, "Old note");
+        existingUserGame.setId(1L);
+
+        // Create a UserGames list with 2 entries
+        UserGame userGame1 = new UserGame(game, 5, "Great!");
+        userGame1.setId(10L);
+        UserGame userGame2 = new UserGame(game, 3, "Okay");
+        userGame2.setId(11L);
+        userGames = Arrays.asList(userGame1, userGame2);
     }
 
     @Test
-    public void filterBySearch_ShouldReturnFilteredList() {
-        String searchQuery = "witcher";
+    public void convertToUserGameResponse_ShouldReturnCorrectDTOList() {
+        List<UserGameResponse> response = userGameService.convertToUserGameResponse(userGames);
 
-        List<UserGame> filtered = userGameService.filterBySearch(userGames, searchQuery);
-
-        assertEquals(1, filtered.size()); // Only 1 game contains witcher as a substring
+        assertEquals(2, response.size());
+        assertEquals(10L, response.get(0).getId());
+        assertEquals("The Witcher 3", response.get(0).getTitle());
+        assertEquals(5, response.get(0).getRating());
     }
 
     @Test
-    public void filterBySearch_NoGameMatch_ShouldReturnEmptyList() {
-        String searchQuery = "test";
+    public void addUserGame_ShouldSaveGame_WhenNotAlreadyInList() {
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
+        when(userGameRepository.existsByGameId(1L)).thenReturn(false);
 
-        List<UserGame> filtered = userGameService.filterBySearch(userGames, searchQuery);
+        userGameService.addUserGame(request);
 
-        assertEquals(0, filtered.size()); // No games with test as a substring
+        ArgumentCaptor<UserGame> captor = ArgumentCaptor.forClass(UserGame.class);
+        verify(userGameRepository).save(captor.capture());
+
+        UserGame saved = captor.getValue();
+        assertEquals(5, saved.getRating());
+        assertEquals("Great!", saved.getNote());
+        assertEquals(game, saved.getGame());
     }
 
     @Test
-    public void filterByRating_ShouldReturnFilteredList() {
-        Integer rating = 5;
+    public void addUserGame_GameNotFound_ShouldThrowException() {
+        when(gameRepository.findById(999L)).thenReturn(Optional.empty());
+        request.setGameId(999L);
 
-        List<UserGame> filtered = userGameService.filterByRating(userGames, rating);
-
-        assertEquals(1, filtered.size()); // Only 1 game
-        assertEquals(rating, filtered.get(0).getRating()); // Rating is 5
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> userGameService.addUserGame(request));
+        assertEquals("Game not found.", ex.getMessage());
     }
 
     @Test
-    public void filterByRating_RatingNotInList_ShouldReturnEmptyList() {
-        Integer rating = 0;
+    public void addUserGame_GameAlreadyInList_ShouldThrowException() {
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
+        when(userGameRepository.existsByGameId(1L)).thenReturn(true);
 
-        List<UserGame> filtered = userGameService.filterByRating(userGames, rating);
-
-        assertEquals(0, filtered.size()); // No games have a rating of 0
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> userGameService.addUserGame(request));
+        assertEquals("Game is already in your list.", ex.getMessage());
     }
 
     @Test
-    public void sortUserGames_ShouldSortByTitle() {
-        String sortBy = "title";
+    public void updateUserGame_ShouldUpdateExistingUserGame() {
+        when(userGameRepository.findById(1L)).thenReturn(Optional.of(existingUserGame));
 
-        List<UserGame> sorted = userGameService.sortUserGames(userGames, sortBy);
+        UserGameRequest updatedRequest = new UserGameRequest();
+        updatedRequest.setRating(4);
+        updatedRequest.setNote("Updated note");
 
-        // A-Z
-        assertEquals("Elden Ring", sorted.get(0).getGame().getTitle());
-        assertEquals("The Witcher 3", sorted.get(1).getGame().getTitle());
-        assertEquals("Valheim", sorted.get(2).getGame().getTitle());
+        userGameService.updateUserGame(updatedRequest, 1L);
+
+        assertEquals(4, existingUserGame.getRating());
+        assertEquals("Updated note", existingUserGame.getNote());
+        verify(userGameRepository).save(existingUserGame);
     }
 
     @Test
-    public void sortUserGames_ShouldSortByReleaseDate() {
-        String sortBy = "releaseDate";
+    public void updateUserGame_GameNotInList_ShouldThrowException() {
+        when(userGameRepository.findById(1L)).thenReturn(Optional.empty());
 
-        List<UserGame> sorted = userGameService.sortUserGames(userGames, sortBy);
-
-        assertEquals("The Witcher 3", sorted.get(0).getGame().getTitle()); // 2001
-        assertEquals("Valheim", sorted.get(1).getGame().getTitle()); // 2002
-        assertEquals("Elden Ring", sorted.get(2).getGame().getTitle()); // 2005
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> userGameService.updateUserGame(request, 1L));
+        assertEquals("Game is not in your list.", ex.getMessage());
     }
 
     @Test
-    public void sortUserGames_ShouldSortByRating() {
-        String sortBy = "rating";
+    public void deleteUserGame_ShouldDelete_WhenGameExists() {
+        when(userGameRepository.existsById(1L)).thenReturn(true);
 
-        List<UserGame> sorted = userGameService.sortUserGames(userGames, sortBy);
+        userGameService.deleteUserGame(1L);
 
-        assertEquals(5, sorted.get(0).getRating()); // Witcher 3, rating of 5
-        assertEquals(4, sorted.get(1).getRating()); // Elden Ring, rating of 4
-        assertEquals(3, sorted.get(2).getRating()); // Valheim, rating of 3
+        verify(userGameRepository).deleteById(1L);
     }
 
+    @Test
+    public void deleteUserGame_GameNotInList_ShouldThrowException() {
+        when(userGameRepository.existsById(1L)).thenReturn(false);
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> userGameService.deleteUserGame(1L));
+        assertEquals("Game is not in your list.", ex.getMessage());
+    }
 }
