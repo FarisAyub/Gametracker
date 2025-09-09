@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import java.time.LocalDate;
 
 @Entity
-public class Game {
+public class Game implements GameView {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,6 +39,7 @@ public class Game {
         this.game_id = game_id;
     }
 
+    @Override
     public String getTitle() {
         return title;
     }
@@ -47,6 +48,7 @@ public class Game {
         this.title = title;
     }
 
+    @Override
     public String getDeveloper() {
         return developer;
     }
@@ -55,6 +57,7 @@ public class Game {
         this.developer = developer;
     }
 
+    @Override
     public String getPublisher() {
         return publisher;
     }

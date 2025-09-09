@@ -29,58 +29,61 @@ public class GameApiService {
     }
 
     public void fetchGamesApi() {
-        // Get 5 pages each of 20 results from the database (total of 100 games)
+        // Get 5 pages each of 40 results from the database (total of 200 games)
         int totalPages = 5;
-        int pageSize = 20;
+        int pageSize = 40;
 
         // Loop through each page adding all games to database
         for (int page = 1; page <= totalPages; page++) {
 
+            // Create the url for current page
             String url = apiUrl + "?key=" + apiKey + "&page=" + page + "&page_size=" + pageSize;
 
             // Get the data from the url as JSON
             ResponseEntity<JsonNode> response = restTemplate.getForEntity(url, JsonNode.class);
             JsonNode results = response.getBody().get("results");
 
-            if (results == null || !results.isArray()) { // If no response from api, skip
-                continue;
-            }
+            if (results == null || !results.isArray()) continue;
 
-            // Loop through each game in the JSON results for the current page, adding it to database
+            // Loop through each game in the JSON results of the current page, adding it to the database
             for (JsonNode gameJson : results) {
                 String title = gameJson.get("name").asText(); // Title of the game
 
-                if (gameRepository.findByTitleIgnoreCase(title).isPresent()) { // If game is in list, skip
-                    continue;
-                }
+                // If game is not already in database
+                if (gameRepository.findByTitleIgnoreCase(title).isEmpty()) {
+                    String slug = gameJson.get("slug").asText(); // Get the Slug for the current game (unique identifier)
 
-                String slug = gameJson.get("slug").asText(); // Use slug which contains name of the current game to search for that game specifically
+                    // Use the Slug to get advanced details about the current game
+                    String detailUrl = apiUrl + "/" + slug + "?key=" + apiKey; // Create a new URL for advanced details about each game
+                    ResponseEntity<JsonNode> detailResponse = restTemplate.getForEntity(detailUrl, JsonNode.class);
+                    JsonNode detailedGame = detailResponse.getBody();
 
-                // Get the data as JSON
-                String detailUrl = apiUrl + "/" + slug + "?key=" + apiKey; // Make another api call using the specific game, to get more detailed information
-                ResponseEntity<JsonNode> detailResponse = restTemplate.getForEntity(detailUrl, JsonNode.class);
-                JsonNode detailedGame = detailResponse.getBody();
+                    if (detailedGame == null) continue;
 
-                if (detailedGame == null) { // If advanced details not found, skip game
-                    continue;
-                }
+                    Game game = parseGameFromJson(gameJson, detailedGame); // Pass in game and advanced game details and returns a Game object
 
-                Game game = parseGameFromJson(gameJson, detailedGame); // Creates game object using values from both JSON bodies
-
-                if (game != null) { // If we have a game to add to database, then add it
-                    gameRepository.save(game);
+                    // If game object was created, add to database
+                    if (game != null) gameRepository.save(game);
                 }
 
             }
         }
     }
 
+    /**
+     * Takes JSON for a game as well as a second JSON containing advanced details about a game. Using these details
+     * a Game object is constructed using the details from the JSON
+     *
+     * @param gameJson Takes in JSON containing details about a game, which has the title, release date and cover image url
+     * @param detailedGame Takes in JSON containing advanced details about a game, which has the developer and publishers
+     * @return Game object with properties filled with current game's details
+     */
     public Game parseGameFromJson(JsonNode gameJson, JsonNode detailedGame) {
         String title = gameJson.get("name").asText();
         String releaseDateStr = gameJson.get("released").asText("");
         String cover = gameJson.get("background_image").asText(null);
-        String developer = getFirstDeveloperPublisher(detailedGame.get("developers")); // First listed developer
-        String publisher = getFirstDeveloperPublisher(detailedGame.get("publishers")); // First listed publisher
+        String developer = getFirstDeveloperPublisher(detailedGame.get("developers")); // First listed developer if multiple
+        String publisher = getFirstDeveloperPublisher(detailedGame.get("publishers")); // First listed publisher if multiple
 
         try {
             LocalDate releaseDate = LocalDate.parse(releaseDateStr); // Convert the release date from string to a LocalDate object

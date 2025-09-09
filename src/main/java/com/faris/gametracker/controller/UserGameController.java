@@ -6,6 +6,7 @@ import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
+import com.faris.gametracker.service.FilterService;
 import com.faris.gametracker.service.UserGameService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,12 +28,14 @@ public class UserGameController {
     private final UserGameRepository userGameRepository;
     private final GameRepository gameRepository;
     private final UserGameService userGameService;
+    private final FilterService filterService;
 
     @Autowired
-    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService) {
+    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService,  FilterService filterService) {
         this.userGameRepository = userGameRepository;
         this.gameRepository = gameRepository;
         this.userGameService = userGameService;
+        this.filterService = filterService;
     }
 
     /**
@@ -58,9 +61,8 @@ public class UserGameController {
 
         List<UserGame> allUserGames = userGameRepository.findAll();
 
-        allUserGames = userGameService.filterBySearch(allUserGames, searchQuery); // Filters game with search query if it exists
-        allUserGames = userGameService.filterByRating(allUserGames, filterByRating); // Filter list by rating if it exists
-        allUserGames = userGameService.sortUserGames(allUserGames, sortBy); // Sort list of games by sort string if it exists
+        // Apply search and sort filters
+        allUserGames = filterService.filterUserGames(allUserGames, searchQuery, sortBy, filterByRating);
 
         // Create pointers for pagination
         int start = page * size; // Take current page multiplied by games per page to find the start index for this page
@@ -98,7 +100,7 @@ public class UserGameController {
      *
      * @param request takes the post sent in as json to parse
      * @param result  gets populated if data validation for request fails
-     * @return message stating game was added to list, or error if it fails
+     * @return returns ResponseEntity, which will be displayed in toast containing success or error message
      */
     @PostMapping
     @ResponseBody
@@ -108,23 +110,15 @@ public class UserGameController {
             return ResponseEntity.badRequest().body("Validation error: " + errorMessage);
         }
 
-        Optional<Game> gameOpt = gameRepository.findById(request.getGameId()); // Optional as the gameId passed in may not exist
-
-        if (gameOpt.isEmpty()) { // If no game exists with the id passed
-            return ResponseEntity.badRequest().body("Game not found.");
+        // Call the addUserGame function, if it returns an exception, send ResponseEntity to be displayed in Toast
+        try {
+            userGameService.addUserGame(request);
+            return ResponseEntity.ok("Game added to your list!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
-
-        if (userGameRepository.existsByGameId(request.getGameId())) { // Check if the game is already in the users list, if so don't add
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Game is already in your list.");
-        }
-
-        UserGame userGame = new UserGame(); // Create a new user game and assign the values to it
-        userGame.setGame(gameOpt.get()); // Set the game
-        userGame.setRating(request.getRating()); // Set the rating
-        userGame.setNote(request.getNote()); // Set the note
-        userGameRepository.save(userGame); // Add to the database
-
-        return ResponseEntity.ok("Game added to your list!"); // Return message
     }
 
     /**
@@ -134,7 +128,7 @@ public class UserGameController {
      * @param id      The id from the url corresponding to the entry that needs to be updated
      * @param request The JSON body containing the updated rating and note
      * @param result  A binding result that will be populated if the request passed in doesn't meet the data validation rules (rating 1-5 and note max 255 chars)
-     * @return returns ok status if successfully updated
+     * @return returns ResponseEntity, which will be displayed in toast
      */
     @PutMapping("/{id}")
     @ResponseBody
@@ -143,17 +137,12 @@ public class UserGameController {
             return ResponseEntity.badRequest().body("Invalid input: " + result.getFieldErrors().get(0).getDefaultMessage());
         }
 
-        Optional<UserGame> userGameOpt = userGameRepository.findById(id);
-        if (userGameOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+        try {
+            userGameService.updateUserGame(request,id);
+            return ResponseEntity.ok("Game updated!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        UserGame userGame = userGameOpt.get();
-        userGame.setRating(request.getRating());
-        userGame.setNote(request.getNote());
-        userGameRepository.save(userGame);
-
-        return ResponseEntity.ok("Game updated.");
     }
 
     /**
@@ -164,13 +153,12 @@ public class UserGameController {
      */
     @DeleteMapping("/{gameId}")
     public ResponseEntity<String> deleteUserGame(@PathVariable Long gameId) {
-        if (!userGameRepository.existsById(gameId)) {
-            return ResponseEntity.notFound().build(); // If user game not found return error
+        try {
+            userGameService.deleteUserGame(gameId);
+            return ResponseEntity.ok("Game removed from your list.");
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-        // Delete the game
-        userGameRepository.deleteById(gameId);
-        // Return successful message
-        return ResponseEntity.ok("Game removed from your list.");
     }
 }
 

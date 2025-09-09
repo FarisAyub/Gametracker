@@ -1,16 +1,35 @@
 package com.faris.gametracker.service;
 
+import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
+import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
+import com.faris.gametracker.repository.GameRepository;
+import com.faris.gametracker.repository.UserGameRepository;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class UserGameService {
+
+    private final UserGameRepository userGameRepository;
+    private final GameRepository gameRepository;
+
+    public UserGameService(UserGameRepository userGameRepository, GameRepository gameRepository) {
+        this.userGameRepository = userGameRepository;
+        this.gameRepository = gameRepository;
+    }
+
     /**
      * Converts a list of user games into a list of user game response, which contains fields for both the game details
      * and the user's game details like rating and note
@@ -38,52 +57,51 @@ public class UserGameService {
     }
 
     /**
-     * Filters a list of UserGame objects based on the string passed in.
+     * Adds a game to the user's list, storing it in the User Game database
      *
-     * @param games       the list of games to filter
-     * @param searchQuery the string that was searched for
-     * @return filtered list containing only games that contain the searchQuery as a substring in any of its fields
+     * @param request Contains the details of the game and user game that needs to be added
      */
-    public List<UserGame> filterBySearch(List<UserGame> games, String searchQuery) {
-        if (searchQuery == null || searchQuery.isEmpty()) return games; // Exit case if no search string was set
-        String query = searchQuery.toLowerCase(); // Convert to lower case, so we can ignore capitalisation
-        games = games.stream().filter(game -> game.getGame().getTitle().toLowerCase().contains(query) ||
-                game.getGame().getDeveloper().toLowerCase().contains(query) ||
-                game.getGame().getPublisher().toLowerCase().contains(query)).collect(Collectors.toList());
-        return games;
-    }
+    public void addUserGame(UserGameRequest request) {
+        Game game = gameRepository.findById(request.getGameId())
+                .orElseThrow(() -> new IllegalArgumentException("Game not found.")); // Optional as the gameId passed in may not exist
 
-    /**
-     * Filters a list of UserGame objects based on the rating passed in.
-     *
-     * @param games  the list of games to filter
-     * @param rating the rating number to filter by values can be 5,4,3,2 and 1
-     * @return filtered list, or the original list if no rating was set
-     */
-    public List<UserGame> filterByRating(List<UserGame> games, Integer rating) {
-        if (rating == null || rating == -1 || rating > 5)
-            return games; // Exit case if rating was not set (we pass -1 value for the "no rating" option
-
-        games = games.stream().filter(game -> game.getRating() == rating).collect(Collectors.toList());
-        return games;
-    }
-
-    /**
-     * Sorts a list of UserGame objects based on the sorting string passed in.
-     *
-     * @param games  the list of games to sort
-     * @param sortBy the sorting criteria which is "title", "releaseDate", and "rating"
-     * @return a new sorted list, or the original list if no sort string was set
-     */
-    public List<UserGame> sortUserGames(List<UserGame> games, String sortBy) {
-        List<UserGame> sorted = new ArrayList<>(games); // Prevents issues with an immutable list
-
-        switch (sortBy != null ? sortBy : "") {
-            case "title" ->
-                    sorted.sort(Comparator.comparing(g -> g.getGame().getTitle(), String.CASE_INSENSITIVE_ORDER));
-            case "releaseDate" -> sorted.sort(Comparator.comparing(g -> g.getGame().getReleaseDate()));
-            case "rating" -> sorted.sort(Comparator.comparing(UserGame::getRating).reversed());
+        if (userGameRepository.existsByGameId(request.getGameId())) { // Check if the game is already in the users list, if so don't add
+            throw new IllegalStateException("Game is already in your list.");
         }
-        return sorted;
+
+        UserGame userGame = new UserGame(); // Create a new user game and assign the values to it
+        userGame.setGame(game); // Set the game
+        userGame.setRating(request.getRating()); // Set the rating
+        userGame.setNote(request.getNote()); // Set the note
+        userGameRepository.save(userGame); // Add to the database
     }
+
+    /**
+     * Updates a game in the user's list, applying the updated rating and note and saving it to the database
+     *
+     * @param request Contains the updated user rating and note
+     * @param id ID of the current User Game entry
+     */
+    public void updateUserGame(UserGameRequest request, Long id) {
+        UserGame userGame = userGameRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Game is not in your list."));
+
+        userGame.setRating(request.getRating());
+        userGame.setNote(request.getNote());
+        userGameRepository.save(userGame);
+    }
+
+    /**
+     * Deletes a game from the user's list
+     *
+     * @param gameId ID of the game that will be removed from the user's list
+     */
+    public void deleteUserGame(Long gameId) {
+        if (!userGameRepository.existsById(gameId)) {
+            throw new IllegalStateException("Game is not in your list.");
+        }
+
+        userGameRepository.deleteById(gameId);
+    }
+
 }

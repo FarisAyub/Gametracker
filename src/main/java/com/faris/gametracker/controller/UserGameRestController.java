@@ -3,6 +3,7 @@ package com.faris.gametracker.controller;
 import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.UserGameRepository;
+import com.faris.gametracker.service.FilterService;
 import com.faris.gametracker.service.UserGameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,11 +19,13 @@ public class UserGameRestController {
 
     private final UserGameRepository userGameRepository;
     private final UserGameService userGameService;
+    private final FilterService filterService;
 
     @Autowired
-    public UserGameRestController(UserGameRepository userGameRepository, UserGameService userGameService) {
+    public UserGameRestController(UserGameRepository userGameRepository, UserGameService userGameService, FilterService filterService) {
         this.userGameRepository = userGameRepository;
         this.userGameService = userGameService;
+        this.filterService = filterService;
     }
 
     /**
@@ -40,10 +43,11 @@ public class UserGameRestController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) Integer filterByRating) {
 
+        // Get all from database
         List<UserGame> allUserGames = userGameRepository.findAll();
-        allUserGames = userGameService.filterBySearch(allUserGames, searchQuery);
-        allUserGames = userGameService.filterByRating(allUserGames, filterByRating);
-        allUserGames = userGameService.sortUserGames(allUserGames, sortBy);
+
+        // Filter and sort the list
+        allUserGames = filterService.filterUserGames(allUserGames, searchQuery, sortBy, filterByRating);
 
         return userGameService.convertToUserGameResponse(allUserGames);
     }

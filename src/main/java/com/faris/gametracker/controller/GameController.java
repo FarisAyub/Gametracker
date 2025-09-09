@@ -4,7 +4,10 @@ import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
+import com.faris.gametracker.service.FilterService;
 import com.faris.gametracker.service.GameApiService;
+import com.faris.gametracker.service.GameService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +24,15 @@ public class GameController {
     private final GameRepository gameRepository;
     private final UserGameRepository userGameRepository;
     private final GameApiService gameApiService;
+    private final FilterService filterService;
+    private final GameService gameService;
 
-    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService) {
+    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService, FilterService filterService, GameService gameService) {
         this.gameRepository = gameRepository;
         this.userGameRepository = userGameRepository;
         this.gameApiService = gameApiService;
+        this.filterService = filterService;
+        this.gameService = gameService;
     }
 
     /**
@@ -49,15 +56,12 @@ public class GameController {
 
         // Get all games and user games
         List<Game> games = gameRepository.findAll();
-        List<UserGame> userGames = userGameRepository.findAll();
 
         // Create a Set of ID's for every entry in userGames
-        Set<Long> userGameIds = userGames.stream().map(userGame -> userGame.getGame().getId()).collect(Collectors.toSet());
+        Set<Long> userGameIds = gameService.getGamesInList();
 
         // Filter and sort
-        games = filterBySearch(games, searchQuery);
-        games = sortGames(games, sortBy);
-        games = filterByInList(games, showFilter, userGameIds);
+        games = filterService.filterGames(games, searchQuery, sortBy, showFilter, userGameIds);
 
         // Create pointers for pagination
         int start = page * size; // Take current page multiplied by games per page to find the start index for this page
@@ -90,59 +94,4 @@ public class GameController {
         return "games";
     }
 
-    /**
-     * Takes a list of games, a string of "inList" or "notInList" and a set of Longs. It then creates a new list
-     * filtered by comparing the id of the games in the list to the id's in the set, returning a new list
-     * containing only the games in the list or not in the list
-     *
-     * @param games       List of games to apply filter to
-     * @param showFilter  String that is either "inList" or "notInList" for method of filtering
-     * @param userGameIds A Set of Long's that corresponds to game id's that are in the user's game list
-     * @return A filtered list containing only the games that are in list or not (returns original list if invalid string for showFilter)
-     */
-    public List<Game> filterByInList(List<Game> games, String showFilter, Set<Long> userGameIds) {
-        if (showFilter == null || showFilter.isEmpty()) return games;
-
-        return switch (showFilter) { // Checks if each game's id exists in the set of userGameId's, and returns a new list filtered
-            case "inList" ->
-                    games.stream().filter(game -> userGameIds.contains(game.getId())).collect(Collectors.toList());
-            case "notInList" ->
-                    games.stream().filter(game -> !userGameIds.contains(game.getId())).collect(Collectors.toList());
-            default -> games;
-        };
-    }
-
-    /**
-     * Filters a list of Game objects based on the string passed in.
-     *
-     * @param games       the list of games to filter
-     * @param searchQuery the string that was searched for
-     * @return filtered list containing only games that contain the searchQuery as a substring in any of its fields
-     */
-    public List<Game> filterBySearch(List<Game> games, String searchQuery) {
-        if (searchQuery == null || searchQuery.isEmpty()) return games; // Exit case if no search string was set
-        String query = searchQuery.toLowerCase(); // Convert to lower case, so we can ignore capitalisation
-        games = games.stream().filter(game ->
-                game.getTitle().toLowerCase().contains(query) ||
-                        game.getDeveloper().toLowerCase().contains(query) ||
-                        game.getPublisher().toLowerCase().contains(query)).collect(Collectors.toList());
-        return games;
-    }
-
-    /**
-     * Sorts a list of Game objects based on the sorting string passed in.
-     *
-     * @param games  the list of games to sort
-     * @param sortBy the sorting criteria which is "title" and "releaseDate"
-     * @return a new sorted list, or the original list if no sort string was set
-     */
-    public List<Game> sortGames(List<Game> games, String sortBy) {
-        List<Game> sorted = new ArrayList<>(games); // Prevents issues with an immutable list
-
-        switch (sortBy != null ? sortBy : "") {
-            case "title" -> sorted.sort(Comparator.comparing(Game::getTitle, String.CASE_INSENSITIVE_ORDER));
-            case "releaseDate" -> sorted.sort(Comparator.comparing(Game::getReleaseDate));
-        }
-        return sorted;
-    }
 }

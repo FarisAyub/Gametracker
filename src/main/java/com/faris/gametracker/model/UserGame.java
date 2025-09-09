@@ -2,11 +2,14 @@ package com.faris.gametracker.model;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
+import java.time.LocalDate;
+
 
 // Controller for the user, tracks all the games that the user has completed with the details of each completion
 
 @Entity
-public class UserGame {
+public class UserGame implements GameView {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,7 +50,8 @@ public class UserGame {
         this.note = notes;
     }
 
-    public int getRating() {
+    @Override
+    public Integer getRating() {
         return rating;
     }
 
@@ -61,5 +65,25 @@ public class UserGame {
 
     public void setGame(Game game) {
         this.game = game;
+    }
+
+    @Override
+    public String getTitle() {
+        return game.getTitle();
+    }
+
+    @Override
+    public String getDeveloper() {
+        return game.getDeveloper();
+    }
+
+    @Override
+    public String getPublisher() {
+        return game.getPublisher();
+    }
+
+    @Override
+    public LocalDate getReleaseDate() {
+        return game.getReleaseDate();
     }
 }
