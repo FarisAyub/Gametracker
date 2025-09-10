@@ -2,12 +2,25 @@
  * Basic toast setup using bootstrap. Displays toast based on values passed in
  *
  * @param {string} message The message to display in the body of the toast
- * @param {string} type The class colour to use for the toast modifying colour between yellow, red and green
  * @param title The title of the toast, typically; Success, Error or Warning
- * @param icon A HTMl span containing an icon from Font Awesome with a preset colour
  */
-function showToast(message, type, title, icon) {
-    document.getElementById('toastContainer').innerHTML = `
+function showToast(message, title) {
+    // Styling for toast based on title (success/error/warning)
+    let type = 'bg-success text-white';
+    let icon = '<i class=\"fa-solid fa-circle-check fa-xl\" style=\"color: #008000;\"></i>';
+
+    switch (title){
+        case 'Error':
+            type = 'bg-danger text-white';
+            icon = '<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>';
+            break;
+        case 'Warning':
+            type = 'bg-warning text-dark';
+            icon = '<i class=\"fa-solid fa-circle-exclamation fa-xl\" style=\"color: #ff8000;\"></i>';
+            break;
+    }
+
+    const toastHTML = `
         <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
             <div class="toast-header">
                 <strong class="me-auto ">${icon} ${title}</strong>
@@ -17,8 +30,13 @@ function showToast(message, type, title, icon) {
                 ${message}
             </div>
         </div>
-    `; // Replace the html in the toast container to current html
-    const toastElement = document.querySelector('.toast'); // Select the toast element
-    const toast = new bootstrap.Toast(toastElement); // Create the toast
-    toast.show() // Show the toast, applying the animations/fade-in etc
+    `;
+
+    // Find the toast container and append new toast's HTML to end
+    const toastContainer = document.getElementById('toastContainer');
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+    // Select the last toast (one we just added) and initialize/show it
+    const toastElement = toastContainer.lastElementChild;
+    new bootstrap.Toast(toastElement).show();
 }
