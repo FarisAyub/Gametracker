@@ -1,16 +1,13 @@
 package com.faris.gametracker.controller;
 
 import com.faris.gametracker.model.Game;
-import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import com.faris.gametracker.service.FilterService;
 import com.faris.gametracker.service.GameApiService;
 import com.faris.gametracker.service.GameService;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,8 +17,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;

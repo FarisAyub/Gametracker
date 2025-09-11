@@ -1,37 +1,38 @@
+<!-- Takes in URL for form post and boolean true or false, for if the page is user-games or not -->
 <div th:fragment="filter(url, userGames)">
     <form class="form-inline my-3" method="get" th:action="@{${url}}">
         <div class="row gx-1 w-100">
             <!-- Search -->
             <div class="col-md">
-                <input class="form-control w-100 styled-input" name="searchQuery" placeholder="Search..." th:value="${searchQuery}"
+                <input class="form-control w-100 styled-input" name="filterSearch" placeholder="Search..." th:value="${filterSearch}"
                        type="text">
             </div>
             <!-- Sort -->
             <div class="col-md-auto">
-                <select class="form-select w-100 styled-input" name="sortBy">
-                    <option th:selected="${sortBy == null}" th:value="''" class="text-muted">Sort By</option>
-                    <option th:selected="${sortBy == 'title'}" th:value="title">Title</option>
-                    <option th:selected="${sortBy == 'releaseDate'}" th:value="releaseDate">Release Date</option>
-                    <option th:if="${userGames}" th:selected="${sortBy == 'rating'}" th:value="rating">Rating</option>
+                <select class="form-select w-100 styled-input" name="filterSort">
+                    <option th:selected="${filterSort == null}" th:value="''" class="text-muted">Sort By</option>
+                    <option th:selected="${filterSort == 'title'}" th:value="title">Title</option>
+                    <option th:selected="${filterSort == 'releaseDate'}" th:value="releaseDate">Release Date</option>
+                    <option th:if="${userGames}" th:selected="${filterSort == 'rating'}" th:value="rating">Rating</option>
                 </select>
             </div>
             <!-- Filter by game's user already has on their list -->
             <div class="col-md-auto" th:if="${!userGames}">
-                <select class="form-select w-100 styled-input" name="showFilter">
-                    <option th:selected="${showFilter == null}" th:value="''" class="text-muted">All</option>
-                    <option th:selected="${showFilter == 'inList'}" th:value="inList">In list</option>
-                    <option th:selected="${showFilter == 'notInList'}" th:value="notInList">Not in list</option>
+                <select class="form-select w-100 styled-input" name="filterList">
+                    <option th:selected="${filterList == null}" th:value="''" class="text-muted">All</option>
+                    <option th:selected="${filterList == 'inList'}" th:value="inList">In list</option>
+                    <option th:selected="${filterList == 'notInList'}" th:value="notInList">Not in list</option>
                 </select>
             </div>
             <!-- Filter by rating -->
             <div class="col-md-auto" th:if="${userGames}">
-                <select class="form-select w-100 styled-input" name="filterByRating">
-                    <option th:selected="${filterByRating == null}" th:value="-1" class="text-muted">Rating</option>
-                    <option th:selected="${filterByRating == 5}" th:value="5">5 Stars</option>
-                    <option th:selected="${filterByRating == 4}" th:value="4">4 Stars</option>
-                    <option th:selected="${filterByRating == 3}" th:value="3">3 Stars</option>
-                    <option th:selected="${filterByRating == 2}" th:value="2">2 Stars</option>
-                    <option th:selected="${filterByRating == 1}" th:value="1">1 Stars</option>
+                <select class="form-select w-100 styled-input" name="filterRating">
+                    <option th:selected="${filterRating == null}" th:value="-1" class="text-muted">Rating</option>
+                    <option th:selected="${filterRating == 5}" th:value="5">5 Stars</option>
+                    <option th:selected="${filterRating == 4}" th:value="4">4 Stars</option>
+                    <option th:selected="${filterRating == 3}" th:value="3">3 Stars</option>
+                    <option th:selected="${filterRating == 2}" th:value="2">2 Stars</option>
+                    <option th:selected="${filterRating == 1}" th:value="1">1 Stars</option>
                 </select>
             </div>
             <!-- Submit filter form -->

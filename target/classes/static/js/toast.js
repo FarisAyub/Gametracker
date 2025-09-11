@@ -6,22 +6,19 @@
  */
 function showToast(message, title) {
     // Styling for toast based on title (success/error/warning)
-    const styling = {
-        Success: {
-            type: 'bg-success text-white',
-            icon: '<i class="fa-solid fa-circle-check fa-xl" style="color: #008000;"></i>'
-        },
-        Error: {
-            type: 'bg-danger text-white',
-            icon: '<i class="fa-solid fa-circle-xmark fa-xl" style="color: #ff0000;"></i>'
-        },
-        Warning: {
-            type: 'bg-warning text-dark',
-            icon: '<i class="fa-solid fa-circle-exclamation fa-xl" style="color: #ff8000;"></i>'
-        }
-    }
+    let type = 'bg-success text-white';
+    let icon = '<i class=\"fa-solid fa-circle-check fa-xl\" style=\"color: #008000;\"></i>';
 
-    const { type , icon } = styling[title];
+    switch (title){
+        case 'Error':
+            type = 'bg-danger text-white';
+            icon = '<i class=\"fa-solid fa-circle-xmark fa-xl\" style=\"color: #ff0000;\"></i>';
+            break;
+        case 'Warning':
+            type = 'bg-warning text-dark';
+            icon = '<i class=\"fa-solid fa-circle-exclamation fa-xl\" style=\"color: #ff8000;\"></i>';
+            break;
+    }
 
     const toastHTML = `
         <div class="toast ${type}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">

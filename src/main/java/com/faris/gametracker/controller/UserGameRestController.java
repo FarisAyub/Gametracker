@@ -32,22 +32,22 @@ public class UserGameRestController {
      * Returns all games in user list, filtered and sorted down by optional parameters.
      * Uses a DTO to filter the information being passed, also allows details from the Game model to be added
      *
-     * @param searchQuery    Optional parameter that filters games that contain this in the title, developer or publisher
-     * @param sortBy         Optional parameter that sorts values if received string is "rating", "releaseDate" or "title"
-     * @param filterByRating Optional parameter that takes in an integer to filter games that have this rating
+     * @param filterSearch    Optional parameter that filters games that contain this in the title, developer or publisher
+     * @param filterSort         Optional parameter that sorts values if received string is "rating", "releaseDate" or "title"
+     * @param filterRating Optional parameter that takes in an integer to filter games that have this rating
      * @return list of user games response
      */
     @GetMapping
     public List<UserGameResponse> getUserGames(
-            @RequestParam(required = false) String searchQuery,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) Integer filterByRating) {
+            @RequestParam(required = false) String filterSearch,
+            @RequestParam(required = false) String filterSort,
+            @RequestParam(required = false) Integer filterRating) {
 
         // Get all from database
         List<UserGame> allUserGames = userGameRepository.findAll();
 
         // Filter and sort the list
-        allUserGames = filterService.filterUserGames(allUserGames, searchQuery, sortBy, filterByRating);
+        allUserGames = filterService.filterUserGames(allUserGames, filterSearch, filterSort, filterRating);
 
         return userGameService.convertToUserGameResponse(allUserGames);
     }

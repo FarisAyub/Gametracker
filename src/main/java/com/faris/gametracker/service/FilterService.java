@@ -16,12 +16,12 @@ public class FilterService {
      * Filters a list of Game or UserGame objects based on the string passed in.
      *
      * @param games       the list of Games/UserGames to filter
-     * @param searchQuery the search string
-     * @return filtered list containing only games that contain the searchQuery as a substring in any of its fields
+     * @param filterSearch the search string
+     * @return filtered list containing only games that contain the filterSearch as a substring in any of its fields
      */
-    public <T extends GameView> List<T> filterBySearch(List<T> games, String searchQuery) {
-        if (searchQuery == null || searchQuery.isEmpty()) return games; // Exit case if no search string was set
-        String query = searchQuery.toLowerCase(); // Convert to lower case, so we can ignore capitalisation
+    public <T extends GameView> List<T> filterBySearch(List<T> games, String filterSearch) {
+        if (filterSearch == null || filterSearch.isEmpty()) return games; // Exit case if no search string was set
+        String query = filterSearch.toLowerCase(); // Convert to lower case, so we can ignore capitalisation
 
         games = games.stream().filter(game ->
                         game.getTitle().toLowerCase().contains(query) ||
@@ -35,15 +35,15 @@ public class FilterService {
      * Sorts a list of Game or UserGame objects based on the sorting string passed in.
      *
      * @param games  List of generics, representing the list of Games or UserGames to sort
-     * @param sortBy The sorting criteria which is "title", "releaseDate" or "rating"
+     * @param filterSort The sorting criteria which is "title", "releaseDate" or "rating"
      * @return A new sorted list, or the original list if sort string didn't match any sort options
      */
-    public <T extends GameView> List<T> filterSort(List<T> games, String sortBy) {
+    public <T extends GameView> List<T> filterSort(List<T> games, String filterSort) {
         if (games == null || games.isEmpty()) return games;
 
         List<T> sorted = new ArrayList<>(games);
 
-        switch (sortBy != null ? sortBy : "") {
+        switch (filterSort != null ? filterSort : "") {
             case "title" ->
                     sorted.sort(Comparator.comparing(GameView::getTitle, String.CASE_INSENSITIVE_ORDER));
             case "releaseDate" ->
@@ -62,14 +62,14 @@ public class FilterService {
      * containing only the games in the list or not in the list
      *
      * @param games       List of games to apply filter to
-     * @param showFilter  String that is either "inList" or "notInList" for method of filtering
+     * @param filterList  String that is either "inList" or "notInList" for method of filtering
      * @param userGameIds A Set of Long's that corresponds to game id's that are in the user's game list
-     * @return A filtered list containing only the games that are in list or not (returns original list if invalid string for showFilter)
+     * @return A filtered list containing only the games that are in list or not (returns original list if invalid string for filterList)
      */
-    public List<Game> filterByInList(List<Game> games, String showFilter, Set<Long> userGameIds) {
-        if (showFilter == null || showFilter.isEmpty()) return games;
+    public List<Game> filterByInList(List<Game> games, String filterList, Set<Long> userGameIds) {
+        if (filterList == null || filterList.isEmpty()) return games;
 
-        return switch (showFilter) { // Checks if each game's id exists in the set of userGameId's, and returns a new list filtered
+        return switch (filterList) { // Checks if each game's id exists in the set of userGameId's, and returns a new list filtered
             case "inList" ->
                     games.stream().filter(game -> userGameIds.contains(game.getId())).collect(Collectors.toList());
             case "notInList" ->
@@ -83,16 +83,16 @@ public class FilterService {
      *  filter and sort types before returning the new list
      *
      * @param games List of games to be filtered
-     * @param searchQuery Search String to filter by
-     * @param sortBy Sorting option for ordering
-     * @param showFilter Whether to show games in user's list or not
+     * @param filterSearch Search String to filter by
+     * @param filterSort Sorting option for ordering
+     * @param filterList Whether to show games in user's list or not
      * @param userGameIds List of games in the user's list, for filtering them in our out
      * @return List that has been filtered and sorted depending on options passed in
      */
-    public List<Game> filterGames(List<Game> games, String searchQuery, String sortBy, String showFilter, Set<Long> userGameIds) {
-        games = filterBySearch(games, searchQuery);
-        games = filterSort(games, sortBy);
-        games = filterByInList(games, showFilter, userGameIds);
+    public List<Game> filterGames(List<Game> games, String filterSearch, String filterSort, String filterList, Set<Long> userGameIds) {
+        games = filterBySearch(games, filterSearch);
+        games = filterSort(games, filterSort);
+        games = filterByInList(games, filterList, userGameIds);
         return games;
     }
 
@@ -104,7 +104,7 @@ public class FilterService {
      * @param rating The rating number to filter by values can be 5,4,3,2 or 1
      * @return Filtered list, or the original list if no rating was set
      */
-    public List<UserGame> filterByRating(List<UserGame> games, Integer rating) {
+    public List<UserGame> filterRating(List<UserGame> games, Integer rating) {
         if (rating == null || rating == -1 || rating > 5)
             return games; // Exit case if rating was not set (we pass -1 value for the "no rating" option)
 
@@ -116,15 +116,15 @@ public class FilterService {
      * Combines search and filter options for UserGame into one, returning a new list with all 3 filter options applied
      *
      * @param userGames List of UserGames to be filtered
-     * @param searchQuery Search String to filter by
-     * @param sortBy Sorting option for ordering
-     * @param filterByRating Rating to be filtered by, only rating passed in will be in returned list
+     * @param filterSearch Search String to filter by
+     * @param filterSort Sorting option for ordering
+     * @param filterRating Rating to be filtered by, only rating passed in will be in returned list
      * @return List that has been filtered and sorted using passed in parameters
      */
-    public List<UserGame> filterUserGames(List<UserGame> userGames, String searchQuery, String sortBy, Integer filterByRating) {
-        userGames = filterBySearch(userGames, searchQuery);
-        userGames = filterByRating(userGames, filterByRating);
-        userGames = filterSort(userGames, sortBy);
+    public List<UserGame> filterUserGames(List<UserGame> userGames, String filterSearch, String filterSort, Integer filterRating) {
+        userGames = filterBySearch(userGames, filterSearch);
+        userGames = filterRating(userGames, filterRating);
+        userGames = filterSort(userGames, filterSort);
         return userGames;
     }
 

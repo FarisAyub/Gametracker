@@ -2,7 +2,6 @@ package com.faris.gametracker.controller;
 
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
-import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/user-games")
@@ -42,9 +40,9 @@ public class UserGameController {
      * Lists all games in user list, filtered and sorted down by optional parameters.
      * Uses a DTO to filter the information being passed, also allows details from the Game model to be added
      *
-     * @param searchQuery    Optional parameter that can be passed in by searching on the website, text is filtered by this
-     * @param sortBy         Optional parameter that accepts values "rating" "releaseDate" and "title" and sorts alphabetically based on the parameter
-     * @param filterByRating Optional parameter that takes in an integer from -1 to 5 to be used to filter games that have this rating
+     * @param filterSearch    Optional parameter that can be passed in by searching on the website, text is filtered by this
+     * @param filterSort         Optional parameter that accepts values "rating" "releaseDate" and "title" and sorts alphabetically based on the parameter
+     * @param filterRating Optional parameter that takes in an integer from -1 to 5 to be used to filter games that have this rating
      * @param page           Optional parameter that takes in the current page on user-games. Defaults to 0 for when a page hasn't been passed in
      * @param size           Optional parameter that takes a size for pages. Defaults to 9 user games per page unless modified
      * @param model          Used to return information back to the thymeleaf html page
@@ -52,9 +50,9 @@ public class UserGameController {
      */
     @GetMapping
     public String getAllUserGames(
-            @RequestParam(required = false) String searchQuery,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) Integer filterByRating,
+            @RequestParam(required = false) String filterSearch,
+            @RequestParam(required = false) String filterSort,
+            @RequestParam(required = false) Integer filterRating,
             @RequestParam(required = false, defaultValue = "0") Integer page,
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
@@ -62,7 +60,7 @@ public class UserGameController {
         List<UserGame> allUserGames = userGameRepository.findAll();
 
         // Apply search and sort filters
-        allUserGames = filterService.filterUserGames(allUserGames, searchQuery, sortBy, filterByRating);
+        allUserGames = filterService.filterUserGames(allUserGames, filterSearch, filterSort, filterRating);
 
         // Create pointers for pagination
         int start = page * size; // Take current page multiplied by games per page to find the start index for this page
@@ -86,9 +84,9 @@ public class UserGameController {
 
         // Returns everything back to the template in thymeleaf
         model.addAttribute("userGames", dtoUserGames);
-        model.addAttribute("searchQuery", searchQuery);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("filterByRating", filterByRating);
+        model.addAttribute("filterSearch", filterSearch);
+        model.addAttribute("filterSort", filterSort);
+        model.addAttribute("filterRating", filterRating);
         model.addAttribute("currentPage", page);
         model.addAttribute("hasNext", hasNext);
         model.addAttribute("hasPrevious", hasPrevious);

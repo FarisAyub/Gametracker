@@ -25,10 +25,10 @@
         <!-- Search bar and filters fragment -->
         <th:block th:replace="~{fragments/filter :: filter(url='/user-games',userGames=true)}"></th:block>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Loop creates card for each game -->
-            <div class="col-md-4 mb-4" th:each="game : ${userGames}">
-                <div class="card text-center csm" data-bs-target="#gameModal" data-bs-toggle="modal"
+            <div class="col-md-4" th:each="game : ${userGames}">
+                <div class="card text-center csm" tabindex="0" role="button" data-bs-target="#gameModal" data-bs-toggle="modal"
                      th:data-bs-game-id="${game.id}"
                      th:data-bs-game-note="${game.note}"
                      th:data-bs-game-rating="${game.rating}"
@@ -44,12 +44,13 @@
                         </p>
                         <hr>
                         <div class="game-info">
+                            <!-- Loops to create filled stars first then for the remaining one loops for unfilled stars -->
                             <span class="stars">
-                                <!-- Loop 1-5 times creating a stares based on rating -->
+                                <!-- Loop 1-5 times creating filled stars -->
                                 <span th:each="i : ${#numbers.sequence(1, game.rating)}">
                                     <i class="fa-solid fa-star text-warning"></i>
                                 </span>
-                                <!-- For every missing star, show an empty star -->
+                                <!-- Loop 1-5 times creating empty stars -->
                                 <span th:if="${game.rating < 5}" th:each="i : ${#numbers.sequence(1, 5 - game.rating)}">
                                     <i class="fa-regular fa-star text-orange"></i>
                                 </span>
@@ -66,8 +67,7 @@
         <th:block th:replace="~{fragments/pagination :: pagination(url='/user-games', size='9')}"></th:block>
 
         <!-- Modal fragment -->
-        <th:block
-                th:replace="~{fragments/modal :: modal(method='PUT',showDelete=true,submitText='Update')}"></th:block>
+        <th:block th:replace="~{fragments/modal :: modal(method='PUT',showDelete=true,submitText='Update')}"></th:block>
 
     </div>
 </main>

@@ -2,7 +2,6 @@ package com.faris.gametracker.service;
 
 import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
-import com.faris.gametracker.service.FilterService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,24 +51,24 @@ public class FilterServiceTest {
 
     @Test
     public void filterByInList_ShouldReturnAllGamesInList() {
-        String showFilter = "inList";
+        String filterList = "inList";
 
-        List<Game> filtered = filterService.filterByInList(games, showFilter, userGameIds);
+        List<Game> filtered = filterService.filterByInList(games, filterList, userGameIds);
 
         assertEquals(2, filtered.size()); // Return 2 games in list: "The Witcher 3" and "Elden ring"
     }
 
     @Test
     public void filterByInList_ShouldReturnAllGamesNotInList() {
-        String showFilter = "notInList";
+        String filterList = "notInList";
 
-        List<Game> filtered = filterService.filterByInList(games, showFilter, userGameIds);
+        List<Game> filtered = filterService.filterByInList(games, filterList, userGameIds);
 
         assertEquals(1, filtered.size()); // Return 1 game not in list: "Valheim"
     }
 
     @Test
-    public void filterByInList_NullShowFilter_ShouldReturnOriginalList() {
+    public void filterByInList_NullfilterList_ShouldReturnOriginalList() {
 
         List<Game> filtered = filterService.filterByInList(games, null, userGameIds);
 
@@ -78,37 +77,37 @@ public class FilterServiceTest {
 
     @Test
     public void filterByInList_NoGamesInUserList_ShouldReturnEmptyList() {
-        String showFilter = "inList";
+        String filterList = "inList";
         Set<Long> emptySet = new HashSet<>();
 
-        List<Game> filtered = filterService.filterByInList(games, showFilter, emptySet);
+        List<Game> filtered = filterService.filterByInList(games, filterList, emptySet);
 
         assertEquals(0, filtered.size()); // Empty list
     }
 
     @Test
     public void filterBySearch_ShouldReturnFilteredList() {
-        String searchQuery = "Valheim";
+        String filterSearch = "Valheim";
 
-        List<Game> filtered = filterService.filterBySearch(games, searchQuery);
+        List<Game> filtered = filterService.filterBySearch(games, filterSearch);
 
         assertEquals(1, filtered.size()); // 1 game contains "Valheim"
     }
 
     @Test
     public void filterBySearch_NoGameMatch_ShouldReturnEmptyList() {
-        String searchQuery = "test";
+        String filterSearch = "test";
 
-        List<Game> filtered = filterService.filterBySearch(games, searchQuery);
+        List<Game> filtered = filterService.filterBySearch(games, filterSearch);
 
         assertEquals(0, filtered.size()); // No game matches "test" as a substring
     }
 
     @Test
-    public void sortGames_ShouldSortByTitle() {
-        String sortBy = "title";
+    public void sortGames_ShouldfilterSortTitle() {
+        String filterSort = "title";
 
-        List<Game> sorted = filterService.filterSort(games, sortBy);
+        List<Game> sorted = filterService.filterSort(games, filterSort);
 
         // Sorted A-Z
         assertEquals("Elden Ring", sorted.get(0).getTitle());
@@ -117,10 +116,10 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortGames_ShouldSortByReleaseDate() {
-        String sortBy = "releaseDate";
+    public void sortGames_ShouldfilterSortReleaseDate() {
+        String filterSort = "releaseDate";
 
-        List<Game> sorted = filterService.filterSort(games, sortBy);
+        List<Game> sorted = filterService.filterSort(games, filterSort);
 
         assertEquals("The Witcher 3", sorted.get(0).getTitle()); // 2001
         assertEquals("Valheim", sorted.get(1).getTitle()); // 2002
@@ -128,10 +127,10 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortGames_BlankSortBy_ShouldReturnOriginalList() {
-        String sortBy = "";
+    public void sortGames_BlankfilterSort_ShouldReturnOriginalList() {
+        String filterSort = "";
 
-        List<Game> sorted = filterService.filterSort(games, sortBy);
+        List<Game> sorted = filterService.filterSort(games, filterSort);
 
         Assertions.assertEquals(games, sorted); // Original list same as filtered list
     }
@@ -153,20 +152,20 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void filterByRating_ShouldReturnFilteredList() {
-        List<UserGame> filtered = filterService.filterByRating(userGames, 5);
+    public void filterRating_ShouldReturnFilteredList() {
+        List<UserGame> filtered = filterService.filterRating(userGames, 5);
         assertEquals(1, filtered.size());
         assertEquals(5, filtered.get(0).getRating());
     }
 
     @Test
-    public void filterByRating_RatingNotInList_ShouldReturnEmptyList() {
-        List<UserGame> filtered = filterService.filterByRating(userGames, 0);
+    public void filterRating_RatingNotInList_ShouldReturnEmptyList() {
+        List<UserGame> filtered = filterService.filterRating(userGames, 0);
         assertEquals(0, filtered.size());
     }
 
     @Test
-    public void sortUserGames_ShouldSortByTitle() {
+    public void sortUserGames_ShouldfilterSortTitle() {
         List<UserGame> sorted = filterService.filterSort(userGames, "title");
         assertEquals("Elden Ring", sorted.get(0).getGame().getTitle());
         assertEquals("The Witcher 3", sorted.get(1).getGame().getTitle());
@@ -174,7 +173,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortUserGames_ShouldSortByReleaseDate() {
+    public void sortUserGames_ShouldfilterSortReleaseDate() {
         List<UserGame> sorted = filterService.filterSort(userGames, "releaseDate");
         assertEquals("The Witcher 3", sorted.get(0).getGame().getTitle());
         assertEquals("Valheim", sorted.get(1).getGame().getTitle());
@@ -182,7 +181,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortUserGames_ShouldSortByRating() {
+    public void sortUserGames_ShouldfilterSortRating() {
         List<UserGame> sorted = filterService.filterSort(userGames, "rating");
         assertEquals(5, sorted.get(0).getRating());
         assertEquals(4, sorted.get(1).getRating());

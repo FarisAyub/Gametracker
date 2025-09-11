@@ -6,18 +6,10 @@ import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class UserGameService {

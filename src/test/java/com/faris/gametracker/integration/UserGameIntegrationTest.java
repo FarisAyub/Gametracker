@@ -283,13 +283,13 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_SearchResultExists_ShouldReturnFilteredResults() throws Exception {
-        String searchQuery = "iron";
+        String filterSearch = "iron";
 
-        mockMvc.perform(get("/user-games").param("searchQuery", searchQuery))
+        mockMvc.perform(get("/user-games").param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(1)))
                 .andExpect(model().attribute("userGames", contains(
@@ -299,52 +299,52 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_SearchResultNoResult_ShouldReturnFilteredResults() throws Exception {
-        String searchQuery = "terraria";
+        String filterSearch = "terraria";
 
-        mockMvc.perform(get("/user-games").param("searchQuery", searchQuery))
+        mockMvc.perform(get("/user-games").param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(0))); // No matches for terraria
     }
 
     @Test
     public void userGamesPage_SearchSpecialCharacters_ShouldReturnEmptyList() throws Exception {
-        String searchQuery = "$%^!";
+        String filterSearch = "$%^!";
 
-        mockMvc.perform(get("/user-games").param("searchQuery", searchQuery))
+        mockMvc.perform(get("/user-games").param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(0))); // No match for special characters
     }
 
     @Test
     public void userGamesPage_SearchBlank_ShouldReturnAllGames() throws Exception {
-        String searchQuery = "";
+        String filterSearch = "";
 
-        mockMvc.perform(get("/user-games").param("searchQuery", searchQuery))
+        mockMvc.perform(get("/user-games").param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5))); // All games in list
     }
 
     @Test
-    public void userGamesPage_SortByTitle_ShouldReturnSortedResults() throws Exception {
-        String sortBy = "title";
+    public void userGamesPage_filterSortTitle_ShouldReturnSortedResults() throws Exception {
+        String filterSort = "title";
 
-        mockMvc.perform(get("/user-games").param("sortBy", sortBy))
+        mockMvc.perform(get("/user-games").param("filterSort", filterSort))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
+                .andExpect(model().attribute("filterSort", filterSort))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
                 .andExpect(model().attribute("userGames", contains( // A-Z
@@ -357,14 +357,14 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SortByReleaseDate_ShouldReturnSortedResults() throws Exception {
-        String sortBy = "releaseDate";
+    public void userGamesPage_filterSortReleaseDate_ShouldReturnSortedResults() throws Exception {
+        String filterSort = "releaseDate";
 
-        mockMvc.perform(get("/user-games").param("sortBy", sortBy))
+        mockMvc.perform(get("/user-games").param("filterSort", filterSort))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
+                .andExpect(model().attribute("filterSort", filterSort))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
                 .andExpect(model().attribute("userGames", contains(
@@ -377,14 +377,14 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SortByRating_ShouldReturnSortedResults() throws Exception {
-        String sortBy = "rating";
+    public void userGamesPage_filterSortRating_ShouldReturnSortedResults() throws Exception {
+        String filterSort = "rating";
 
-        mockMvc.perform(get("/user-games").param("sortBy", sortBy))
+        mockMvc.perform(get("/user-games").param("filterSort", filterSort))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
+                .andExpect(model().attribute("filterSort", filterSort))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
                 .andExpect(model().attribute("userGames", contains(
@@ -397,14 +397,14 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_InvalidSortBy_ShouldReturnUnsorted() throws Exception {
-        String sortBy = "invalidSortType";
+    public void userGamesPage_InvalidfilterSort_ShouldReturnUnsorted() throws Exception {
+        String filterSort = "invalidSortType";
 
-        mockMvc.perform(get("/user-games").param("sortBy", sortBy))
+        mockMvc.perform(get("/user-games").param("filterSort", filterSort))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
+                .andExpect(model().attribute("filterSort", filterSort))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5)))
                 .andExpect(model().attribute("userGames", contains( // Unsorted list
@@ -417,14 +417,14 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_FilterByRating_ShouldReturnFiltered() throws Exception {
-        Integer filterByRating = 5;
+    public void userGamesPage_filterRating_ShouldReturnFiltered() throws Exception {
+        Integer filterRating = 5;
 
-        mockMvc.perform(get("/user-games").param("filterByRating", String.valueOf(filterByRating)))
+        mockMvc.perform(get("/user-games").param("filterRating", String.valueOf(filterRating)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("filterByRating", filterByRating))
+                .andExpect(model().attribute("filterRating", filterRating))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(1)))
                 .andExpect(model().attribute("userGames", contains(
@@ -434,30 +434,30 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_FilterByInvalidRating_ShouldReturnUnfiltered() throws Exception {
-        Integer filterByRating = 55;
+        Integer filterRating = 55;
 
-        mockMvc.perform(get("/user-games").param("filterByRating", String.valueOf(filterByRating)))
+        mockMvc.perform(get("/user-games").param("filterRating", String.valueOf(filterRating)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("filterByRating", filterByRating))
+                .andExpect(model().attribute("filterRating", filterRating))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(5))); // Original list, unfiltered
     }
 
     @Test
-    public void userGamesPage_SearchAndFilterByRating_ShouldReturnFilteredResults() throws Exception {
-        String searchQuery = "2"; // Only matches "title 2"
-        Integer filterByRating = 1; // Matches "title 1" and "title 2"
+    public void userGamesPage_SearchAndfilterRating_ShouldReturnFilteredResults() throws Exception {
+        String filterSearch = "2"; // Only matches "title 2"
+        Integer filterRating = 1; // Matches "title 1" and "title 2"
 
         mockMvc.perform(get("/user-games")
-                        .param("filterByRating", String.valueOf(filterByRating))
-                        .param("searchQuery", searchQuery))
+                        .param("filterRating", String.valueOf(filterRating))
+                        .param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("filterByRating", filterByRating))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterRating", filterRating))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(1)))
                 .andExpect(model().attribute("userGames", contains(
@@ -468,17 +468,17 @@ public class UserGameIntegrationTest {
 
     @Test
     public void userGamesPage_SearchAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
-        String searchQuery = "he"; // Matches "The Witcher 3" and "Valheim"
-        String sortBy = "title";
+        String filterSearch = "he"; // Matches "The Witcher 3" and "Valheim"
+        String filterSort = "title";
 
         mockMvc.perform(get("/user-games")
-                        .param("sortBy", sortBy)
-                        .param("searchQuery", searchQuery))
+                        .param("filterSort", filterSort)
+                        .param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
-                .andExpect(model().attribute("searchQuery", searchQuery))
+                .andExpect(model().attribute("filterSort", filterSort))
+                .andExpect(model().attribute("filterSearch", filterSearch))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(2)))
                 .andExpect(model().attribute("userGames", contains( // A-Z
@@ -489,18 +489,18 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_FilterByRatingAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
-        String sortBy = "title";
-        Integer filterByRating = 1; // Matches "Title 1" and "Title 2"
+    public void userGamesPage_filterRatingAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
+        String filterSort = "title";
+        Integer filterRating = 1; // Matches "Title 1" and "Title 2"
 
         mockMvc.perform(get("/user-games")
-                        .param("sortBy", sortBy)
-                        .param("filterByRating", String.valueOf(filterByRating)))
+                        .param("filterSort", filterSort)
+                        .param("filterRating", String.valueOf(filterRating)))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("sortBy", sortBy))
-                .andExpect(model().attribute("filterByRating", filterByRating))
+                .andExpect(model().attribute("filterSort", filterSort))
+                .andExpect(model().attribute("filterRating", filterRating))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(2)))
                 .andExpect(model().attribute("userGames", contains(
@@ -511,27 +511,27 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SearchSortAndFilterByRating_ShouldReturnFilteredAndSortedResults() throws Exception {
+    public void userGamesPage_SearchSortAndfilterRating_ShouldReturnFilteredAndSortedResults() throws Exception {
         UserGame add = new UserGame();
         add.setGame(games.get(5));
         add.setNote("game 3");
         add.setRating(1);
         userGameRepository.save(add); // Add new game to user's list
 
-        String searchQuery = "developer"; // Matches "developer 1", "developer 2" and "developer 3"
-        String sortBy = "title";
-        Integer filterByRating = 1; // Matches "Title 1", "Title 2" and "Title 3"
+        String filterSearch = "developer"; // Matches "developer 1", "developer 2" and "developer 3"
+        String filterSort = "title";
+        Integer filterRating = 1; // Matches "Title 1", "Title 2" and "Title 3"
 
         mockMvc.perform(get("/user-games")
-                        .param("sortBy", sortBy)
-                        .param("filterByRating", String.valueOf(filterByRating))
-                        .param("searchQuery", searchQuery))
+                        .param("filterSort", filterSort)
+                        .param("filterRating", String.valueOf(filterRating))
+                        .param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
-                .andExpect(model().attribute("sortBy", sortBy))
-                .andExpect(model().attribute("filterByRating", filterByRating))
+                .andExpect(model().attribute("filterSearch", filterSearch))
+                .andExpect(model().attribute("filterSort", filterSort))
+                .andExpect(model().attribute("filterRating", filterRating))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(3)))
                 .andExpect(model().attribute("userGames", contains( // Sorted A-Z
@@ -542,21 +542,21 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SearchSortAndFilterByRating_EmptyResults_ShouldReturnEmpty() throws Exception {
-        String searchQuery = "witcher"; // Matches "Witcher 3"
-        String sortBy = "title";
-        Integer filterByRating = 2; // No games contain witcher that have a rating of 2
+    public void userGamesPage_SearchSortAndfilterRating_EmptyResults_ShouldReturnEmpty() throws Exception {
+        String filterSearch = "witcher"; // Matches "Witcher 3"
+        String filterSort = "title";
+        Integer filterRating = 2; // No games contain witcher that have a rating of 2
 
         mockMvc.perform(get("/user-games")
-                        .param("sortBy", sortBy)
-                        .param("filterByRating", String.valueOf(filterByRating))
-                        .param("searchQuery", searchQuery))
+                        .param("filterSort", filterSort)
+                        .param("filterRating", String.valueOf(filterRating))
+                        .param("filterSearch", filterSearch))
                 .andExpect(status().isOk())
                 .andExpect(view().name("user-games"))
                 .andExpect(model().attributeExists("userGames"))
-                .andExpect(model().attribute("searchQuery", searchQuery))
-                .andExpect(model().attribute("sortBy", sortBy))
-                .andExpect(model().attribute("filterByRating", filterByRating))
+                .andExpect(model().attribute("filterSearch", filterSearch))
+                .andExpect(model().attribute("filterSort", filterSort))
+                .andExpect(model().attribute("filterRating", filterRating))
                 .andExpect(model().attribute("currentPage", 0))
                 .andExpect(model().attribute("userGames", hasSize(0))); // No matches
     }

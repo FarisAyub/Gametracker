@@ -25,10 +25,10 @@
         <!-- Search bar and filters fragment -->
         <th:block th:replace="~{fragments/filter :: filter(url='/games',userGames=false)}"></th:block>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Loop creates card for each game -->
-            <div class="col-md-4 mb-4" th:each="game : ${games}">
-                <div class="card text-center" data-bs-target="#gameModal" data-bs-toggle="modal"
+            <div class="col-md-4" th:each="game : ${games}">
+                <div class="card text-center" tabindex="0" role="button" data-bs-target="#gameModal" data-bs-toggle="modal"
                      th:data-bs-game-developer="${game.developer}"
                      th:data-bs-game-id="${game.id}"
                      th:data-bs-game-publisher="${game.publisher}"
@@ -42,7 +42,7 @@
                             <span th:text="${game.developer}">Developer</span><br>
                             <span th:text="${game.publisher}">Publisher</span><br>
                             <span th:text="${game.releaseDate}">Release Date</span><br>
-                            <!-- Bootstrap badge if the game's id is in user's game list --->
+                            <!-- Bootstrap badge if the game's id is in user's game list set --->
                             <span class="badge bg-success" th:if="${userGameIds.contains(game.id)}">On Your List</span>
                         </p>
                     </div>

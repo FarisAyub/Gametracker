@@ -1,19 +1,24 @@
+<!-- Takes a url for the current page, in order to redirect to the correct location, as well as a size which covers the size of the page -->
 <div th:fragment="pagination(url, size)">
     <div class="d-flex justify-content-center mt-4">
         <nav>
-            <ul class="pagination">
+            <ul class="pagination pagination-lg">
                 <!-- Disable previous button if boolean hasPrevious is currently false -->
                 <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{${url}(page=${currentPage - 1}, size=${size}, searchQuery=${searchQuery}, sortBy=${sortBy})}">
-                        Previous
+                       th:href="@{${url}(page=${currentPage - 1}, size=${size}, filterSearch=${filterSearch}, filterSort=${filterSort})}">
+                        &laquo;
                     </a>
+                </li>
+                <!-- Current page -->
+                <li class="page-item disabled">
+                    <span class="page-link">Page [[${currentPage + 1}]]</span>
                 </li>
                 <!-- Disable next page button if boolean hasNext is currently false -->
                 <li class="page-item" th:classappend="${!hasNext} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{${url}(page=${currentPage + 1}, size=${size}, searchQuery=${searchQuery}, sortBy=${sortBy})}">
-                        Next
+                       th:href="@{${url}(page=${currentPage + 1}, size=${size}, filterSearch=${filterSearch}, filterSort=${filterSort})}">
+                        &raquo;
                     </a>
                 </li>
             </ul>

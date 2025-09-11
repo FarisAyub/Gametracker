@@ -1,7 +1,6 @@
 package com.faris.gametracker.controller;
 
 import com.faris.gametracker.dto.UserGameRequest;
-import com.faris.gametracker.model.Game;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
@@ -11,25 +10,19 @@ import com.faris.gametracker.service.UserGameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserGameController.class)
 public class UserGameControllerTest {
@@ -58,8 +51,6 @@ public class UserGameControllerTest {
     private UserGameRequest validRequest;
     private UserGameRequest invalidRequest;
 
-    private List<UserGame> userGames;
-
     @Autowired
     private ObjectMapper objectMapper; // To convert java to JSON for http requests like post
 
@@ -78,7 +69,6 @@ public class UserGameControllerTest {
 
     @Test
     public void getAllUserGames_ShouldReturnOk() throws Exception {
-        List<UserGame> userGames = Arrays.asList(new UserGame(), new UserGame());
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk());
     }

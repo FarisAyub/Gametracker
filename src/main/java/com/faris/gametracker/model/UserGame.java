@@ -2,7 +2,6 @@ package com.faris.gametracker.model;
 
 import jakarta.persistence.*;
 
-import java.io.Serializable;
 import java.time.LocalDate;
 
 
