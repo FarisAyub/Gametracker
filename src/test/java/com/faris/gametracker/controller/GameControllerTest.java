@@ -1,5 +1,6 @@
 package com.faris.gametracker.controller;
 
+import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.model.Game;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
@@ -60,38 +61,51 @@ public class GameControllerTest {
 
     @Test
     public void getAllGames_ShouldReturnGamesAndAttributes() throws Exception {
-        when(gameRepository.findAll()).thenReturn(games);
-        when(userGameRepository.findAll()).thenReturn(Collections.emptyList());
+        List<Game> pagedGames = Arrays.asList(games.get(0), games.get(1)); // New list with only first 2 games
+        PageResponse<Game> pageResponse = new PageResponse<>(pagedGames, false, true); // Create PageResponse with no previous page, but a next page
 
-        mockMvc.perform(get("/games").param("page", "0").param("size", "18"))
+        when(gameService.getGames(null, null, null, 0, 1)).thenReturn(pageResponse);
+        when(gameService.getGamesInList()).thenReturn(userGameIds);
+
+        mockMvc.perform(get("/games").param("page", "0").param("size", "1"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("games"))
                 .andExpect(model().attributeExists("games"))
                 .andExpect(model().attributeExists("userGameIds"))
+                .andExpect(model().attribute("games", pagedGames))
                 .andExpect(model().attribute("currentPage", 0))
-                .andExpect(model().attribute("hasNext", false))
+                .andExpect(model().attribute("hasNext", true))
                 .andExpect(model().attribute("hasPrevious", false));
     }
 
     @Test
     public void getAllGames_EmptyLists_ShouldStillReturnGamesView() throws Exception {
-        when(gameRepository.findAll()).thenReturn(Collections.emptyList()); // When findall is called, return empty list
-        when(userGameRepository.findAll()).thenReturn(Collections.emptyList()); // Return empty list
+        PageResponse<Game> emptyPage = new PageResponse<>(Collections.emptyList(), false, false); // No games returned
+
+        when(gameService.getGames(null, null, null, 0, 18)).thenReturn(emptyPage);
+        when(gameService.getGamesInList()).thenReturn(Collections.emptySet());
 
         mockMvc.perform(get("/games"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("games"))
-                .andExpect(model().attribute("games", Collections.emptyList()));
+                .andExpect(model().attribute("games", Collections.emptyList())) // Should be no list of games
+                .andExpect(model().attribute("userGameIds", Collections.emptySet())) // No games in users game list
+                .andExpect(model().attribute("hasNext", false))
+                .andExpect(model().attribute("hasPrevious", false));
     }
+
 
     @Test
     public void getAllGames_InvalidPageParameter_ShouldRedirectToErrorView() throws Exception {
-        when(gameRepository.findAll()).thenReturn(games);
-        when(userGameRepository.findAll()).thenReturn(Collections.emptyList());
+        // -1 Page shouldn't exist, 0-indexed paging
+        when(gameService.getGames(null, null, null, -1, 18))
+                .thenThrow(new IllegalArgumentException("Invalid page number"));
 
-        mockMvc.perform(get("/games").param("page", "-1")) // Invalid page
-                .andExpect(status().isOk()) // Successful as exception handler redirects to error page
-                .andExpect(view().name("error")); // Should be redirected to the error page
+        mockMvc.perform(get("/games").param("page", "-1"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error")) // GlobalExceptionHandler will redirect to error page
+                .andExpect(model().attributeExists("errorMessage"))
+                .andExpect(model().attribute("errorMessage", "Oops! Something went wrong.")); // Error message set in exception handler
     }
 
 }

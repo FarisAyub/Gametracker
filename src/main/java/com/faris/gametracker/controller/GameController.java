@@ -1,5 +1,6 @@
 package com.faris.gametracker.controller;
 
+import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.model.Game;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
@@ -11,10 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 @Controller
 @RequestMapping("/games")
@@ -53,43 +50,17 @@ public class GameController {
                               @RequestParam(required = false, defaultValue = "18") Integer size,
                               Model model) {
 
-        // Get all games and user games
-        List<Game> games = gameRepository.findAll();
+        // Gets one page of filtered results
+        PageResponse<Game> pageOfGames = gameService.getGames(filterSearch, filterSort, filterList, page, size);
 
-        // Create a Set of ID's for every entry in userGames
-        Set<Long> userGameIds = gameService.getGamesInList();
-
-        // Filter and sort
-        games = filterService.filterGames(games, filterSearch, filterSort, filterList, userGameIds);
-
-        // Create pointers for pagination
-        int start = page * size; // Take current page multiplied by games per page to find the start index for this page
-        int end = Math.min(start + size, games.size()); // Take the start index and add the size of page, using math.min in case there's not enough games for full page
-
-        // List to contain our current page of games
-        List<Game> pageOfGames;
-        if (start >= games.size()) {
-            // If the page is out of bounds, return an empty list
-            pageOfGames = Collections.emptyList();
-        } else {
-            // Create a new list that's a sublist containing 1 page of games, using start and end index
-            pageOfGames = games.subList(start, end);
-        }
-
-        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
-        boolean hasNext = end < games.size();
-        boolean hasPrevious = page > 0;
-
-        // Values returned to the html, pass back the search query, sort type and list of games, these
-        // are used to make sure the filter option selected doesn't reset, as we pass these back and then set the filters to what they were previously.
         model.addAttribute("filterSearch", filterSearch);
         model.addAttribute("filterSort", filterSort);
         model.addAttribute("filterList", filterList);
-        model.addAttribute("games", pageOfGames);
-        model.addAttribute("userGameIds", userGameIds);
+        model.addAttribute("games", pageOfGames.getPagedList());
+        model.addAttribute("userGameIds", gameService.getGamesInList());
         model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", hasNext);
-        model.addAttribute("hasPrevious", hasPrevious);
+        model.addAttribute("hasNext", pageOfGames.isHasNext());
+        model.addAttribute("hasPrevious", pageOfGames.isHasPrevious());
         return "games";
     }
 

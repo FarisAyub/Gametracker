@@ -1,6 +1,6 @@
 package com.faris.gametracker.service;
 
-import com.faris.gametracker.dto.PagedUserGameResponse;
+import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.Game;
@@ -25,6 +25,7 @@ public class UserGameServiceTest {
     private GameRepository gameRepository;
     private UserGameService userGameService;
     private FilterService filterService;
+    private PaginationService paginationService;
 
     private Game game;
     private UserGameRequest request;
@@ -36,8 +37,9 @@ public class UserGameServiceTest {
         userGameRepository = mock(UserGameRepository.class);
         gameRepository = mock(GameRepository.class);
         filterService = mock(FilterService.class);
+        paginationService = mock(PaginationService.class);
 
-        userGameService = new UserGameService(userGameRepository, gameRepository, filterService);
+        userGameService = new UserGameService(userGameRepository, gameRepository, filterService, paginationService);
 
         // Single game
         game = new Game("url", "The Witcher 3", LocalDate.of(2001, 5, 5), "CD Projekt Red", "CDPR");
@@ -67,10 +69,15 @@ public class UserGameServiceTest {
         when(userGameRepository.findAll()).thenReturn(userGames);
         when(filterService.filterUserGames(userGames, null, null, null)).thenReturn(userGames);
 
-        // Get response with no filters, page is 0 and size is 1
-        PagedUserGameResponse result = userGameService.getUserGameResponse(null, null, null, 0, 1);
+        // Mock data
+        PageResponse<UserGame> paged = new PageResponse<>(List.of(userGames.get(0)), false, true);
+        when(paginationService.paginate(userGames, 0, 1)).thenReturn(paged);
 
-        assertEquals(1, result.getPagedUserGame().size()); // Should return 1 as page size is 1
+        // Get response with no filters, page is 0 and size is 1
+        PageResponse<UserGameResponse> result = userGameService.getUserGameResponse(null, null, null, 0, 1);
+
+        assertEquals(1, result.getPagedList().size()); // Should return 1 as page size is 1
+        assertEquals(10L, result.getPagedList().get(0).getId()); // Make sure the id for first element is correct
         assertTrue(result.isHasNext()); // Should be a second page
         assertFalse(result.isHasPrevious()); // Page 0 shouldn't be any previous pages
     }
@@ -81,10 +88,15 @@ public class UserGameServiceTest {
         when(userGameRepository.findAll()).thenReturn(userGames);
         when(filterService.filterUserGames(userGames, null, null, null)).thenReturn(userGames);
 
-        // Get response with no filters, page is 1, size of page is 1 (page is 0-indexed)
-        PagedUserGameResponse result = userGameService.getUserGameResponse(null, null, null, 1, 1);
+        // Mock data
+        PageResponse<UserGame> paged = new PageResponse<>(List.of(userGames.get(1)), true, false);
+        when(paginationService.paginate(userGames, 1, 1)).thenReturn(paged);
 
-        assertEquals(1, result.getPagedUserGame().size()); // Should have 1 result on this page
+        // Get response with no filters, page is 1, size of page is 1 (page is 0-indexed)
+        PageResponse<UserGameResponse> result = userGameService.getUserGameResponse(null, null, null, 1, 1);
+
+        assertEquals(1, result.getPagedList().size()); // Should have 1 result on this page
+        assertEquals(11L, result.getPagedList().get(0).getId()); // Make sure the id for first element is correct
         assertFalse(result.isHasNext()); // Only 2 games, so should be no next page
         assertTrue(result.isHasPrevious()); // On page 2, so should be a previous page
     }
@@ -95,10 +107,14 @@ public class UserGameServiceTest {
         when(userGameRepository.findAll()).thenReturn(userGames);
         when(filterService.filterUserGames(userGames, null, null, null)).thenReturn(userGames);
 
-        // rGet response with no filters, page is 5, size of page is 2
-        PagedUserGameResponse result = userGameService.getUserGameResponse(null, null, null, 5, 2);
+        // Mock data
+        PageResponse<UserGame> paged = new PageResponse<>(List.of(), true, false);
+        when(paginationService.paginate(userGames, 5, 2)).thenReturn(paged);
 
-        assertTrue(result.getPagedUserGame().isEmpty()); // Should be no games for this page
+        // Get response with no filters, page is 5, size of page is 2
+        PageResponse<UserGameResponse> result = userGameService.getUserGameResponse(null, null, null, 5, 2);
+
+        assertTrue(result.getPagedList().isEmpty()); // Should be no games for this page
         assertFalse(result.isHasNext()); // Shouldn't have a next page since out of bounds
         assertTrue(result.isHasPrevious()); // Should have a previous page since page isn't 0
     }

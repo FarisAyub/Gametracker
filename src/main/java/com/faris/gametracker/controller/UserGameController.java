@@ -1,9 +1,8 @@
 package com.faris.gametracker.controller;
 
-import com.faris.gametracker.dto.PagedUserGameResponse;
+import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
-import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import com.faris.gametracker.service.FilterService;
@@ -16,9 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
-import java.util.List;
 
 @Controller
 @RequestMapping("/user-games")
@@ -58,10 +54,11 @@ public class UserGameController {
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
 
-        PagedUserGameResponse pageOfGames = userGameService.getUserGameResponse(filterSearch, filterSort, filterRating, page, size);
+        // Gets one page of UserGames, which have been converted to DTO UserGameResponse
+        PageResponse<UserGameResponse> pageOfGames = userGameService.getUserGameResponse(filterSearch, filterSort, filterRating, page, size);
 
         // Returns everything back to the template in thymeleaf
-        model.addAttribute("userGames", pageOfGames.getPagedUserGame());
+        model.addAttribute("userGames", pageOfGames.getPagedList());
         model.addAttribute("filterSearch", filterSearch);
         model.addAttribute("filterSort", filterSort);
         model.addAttribute("filterRating", filterRating);

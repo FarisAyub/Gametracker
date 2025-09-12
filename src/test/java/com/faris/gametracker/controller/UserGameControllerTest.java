@@ -1,9 +1,8 @@
 package com.faris.gametracker.controller;
 
-import com.faris.gametracker.dto.PagedUserGameResponse;
+import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
-import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
 import com.faris.gametracker.service.FilterService;
@@ -12,16 +11,13 @@ import com.faris.gametracker.service.UserGameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
@@ -81,16 +77,17 @@ public class UserGameControllerTest {
                 5,
                 "note"
         );
+        // Mock that there's no next or previous page
+        PageResponse<UserGameResponse> pageOfGames = new PageResponse<>(Collections.singletonList(response), false, false);
 
-        PagedUserGameResponse pageOfGames = new PagedUserGameResponse(Collections.singletonList(response), false, true);
-
+        // When called with page 0 size 9, should have no previous or next page
         when(userGameService.getUserGameResponse(null, null, null, 0, 9)).thenReturn(pageOfGames);
 
         mockMvc.perform(get("/user-games"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("userGames"))
                 .andExpect(model().attribute("hasPrevious", false))
-                .andExpect(model().attribute("hasNext", true));
+                .andExpect(model().attribute("hasNext", false));
     }
 
 
