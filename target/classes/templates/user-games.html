@@ -25,10 +25,10 @@
         <!-- Search bar and filters fragment -->
         <th:block th:replace="~{fragments/filter :: filter(url='/user-games',userGames=true)}"></th:block>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Loop creates card for each game -->
-            <div class="col-md-4 mb-4" th:each="game : ${userGames}">
-                <div class="card text-center csm" data-bs-target="#gameModal" data-bs-toggle="modal"
+            <div class="col-md-4" th:each="game : ${userGames}">
+                <div class="card text-center csm" tabindex="0" role="button" data-bs-target="#gameModal" data-bs-toggle="modal"
                      th:data-bs-game-id="${game.id}"
                      th:data-bs-game-note="${game.note}"
                      th:data-bs-game-rating="${game.rating}"

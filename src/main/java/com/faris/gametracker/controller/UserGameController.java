@@ -1,5 +1,6 @@
 package com.faris.gametracker.controller;
 
+import com.faris.gametracker.dto.PagedUserGameResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.UserGame;
@@ -57,39 +58,16 @@ public class UserGameController {
             @RequestParam(required = false, defaultValue = "9") Integer size,
             Model model) {
 
-        List<UserGame> allUserGames = userGameRepository.findAll();
-
-        // Apply search and sort filters
-        allUserGames = filterService.filterUserGames(allUserGames, filterSearch, filterSort, filterRating);
-
-        // Create pointers for pagination
-        int start = page * size; // Take current page multiplied by games per page to find the start index for this page
-        int end = Math.min(start + size, allUserGames.size()); // Set end index to start index + amount per page, returning lower if there's not enough left in list
-
-        // List to contain our current page of games
-        List<UserGame> pageOfGames;
-        if (start >= allUserGames.size()) {
-            // If the page is out of bounds, return an empty page
-            pageOfGames = Collections.emptyList();
-        } else {
-            // Create a new list that's a sublist of games containing passed in size amount of games
-            pageOfGames = allUserGames.subList(start, end);
-        }
-
-        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
-        boolean hasNext = end < allUserGames.size();
-        boolean hasPrevious = page > 0;
-
-        List<UserGameResponse> dtoUserGames = userGameService.convertToUserGameResponse(pageOfGames);
+        PagedUserGameResponse pageOfGames = userGameService.getUserGameResponse(filterSearch, filterSort, filterRating, page, size);
 
         // Returns everything back to the template in thymeleaf
-        model.addAttribute("userGames", dtoUserGames);
+        model.addAttribute("userGames", pageOfGames.getPagedUserGame());
         model.addAttribute("filterSearch", filterSearch);
         model.addAttribute("filterSort", filterSort);
         model.addAttribute("filterRating", filterRating);
         model.addAttribute("currentPage", page);
-        model.addAttribute("hasNext", hasNext);
-        model.addAttribute("hasPrevious", hasPrevious);
+        model.addAttribute("hasNext", pageOfGames.isHasNext());
+        model.addAttribute("hasPrevious", pageOfGames.isHasPrevious());
         return "user-games";
     }
 

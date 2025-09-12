@@ -1,5 +1,6 @@
 package com.faris.gametracker.service;
 
+import com.faris.gametracker.dto.PagedUserGameResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.Game;
@@ -9,6 +10,7 @@ import com.faris.gametracker.repository.UserGameRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -16,10 +18,12 @@ public class UserGameService {
 
     private final UserGameRepository userGameRepository;
     private final GameRepository gameRepository;
+    private final FilterService filterService;
 
-    public UserGameService(UserGameRepository userGameRepository, GameRepository gameRepository) {
+    public UserGameService(UserGameRepository userGameRepository, GameRepository gameRepository, FilterService filterService) {
         this.userGameRepository = userGameRepository;
         this.gameRepository = gameRepository;
+        this.filterService = filterService;
     }
 
     /**
@@ -96,4 +100,26 @@ public class UserGameService {
         userGameRepository.deleteById(gameId);
     }
 
+    public PagedUserGameResponse getUserGameResponse(String filterSearch, String filterSort, Integer filterRating, Integer page, Integer size) {
+        // Filter all games by passed filters
+        List<UserGame> filtered = filterService.filterUserGames(userGameRepository.findAll(), filterSearch, filterSort, filterRating);
+
+
+        // Create pointers for pagination
+        int start = page * size; // Take current page multiplied by games per page to find the start index for this page
+        int end = Math.min(start + size, filtered.size()); // Set end index to start index + amount per page, returning lower if there's not enough left in list
+
+        List<UserGame> pageOfGames;
+        if (start >= filtered.size()) {
+            pageOfGames = Collections.emptyList();
+        } else {
+            pageOfGames = filtered.subList(start, end);
+        }
+
+        // Booleans to be used by the page buttons, if there's no more games to left/right, disable button for moving page
+        boolean hasNext = end < filtered.size();
+        boolean hasPrevious = page > 0;
+
+        return new PagedUserGameResponse(convertToUserGameResponse(pageOfGames), hasPrevious, hasNext);
+    }
 }

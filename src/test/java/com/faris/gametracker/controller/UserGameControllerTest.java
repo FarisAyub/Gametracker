@@ -1,6 +1,8 @@
 package com.faris.gametracker.controller;
 
+import com.faris.gametracker.dto.PagedUserGameResponse;
 import com.faris.gametracker.dto.UserGameRequest;
+import com.faris.gametracker.dto.UserGameResponse;
 import com.faris.gametracker.model.UserGame;
 import com.faris.gametracker.repository.GameRepository;
 import com.faris.gametracker.repository.UserGameRepository;
@@ -16,13 +18,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserGameController.class)
 public class UserGameControllerTest {
@@ -45,9 +49,6 @@ public class UserGameControllerTest {
     @MockBean
     private UserGameService userGameService;
 
-    @InjectMocks
-    private UserGameController userGameController;
-
     private UserGameRequest validRequest;
     private UserGameRequest invalidRequest;
 
@@ -68,10 +69,30 @@ public class UserGameControllerTest {
     }
 
     @Test
-    public void getAllUserGames_ShouldReturnOk() throws Exception {
+    public void getAllUserGames_ShouldReturnOkAndModelAttributes() throws Exception {
+        // Mock response
+        UserGameResponse response = new UserGameResponse(
+                1L,
+                "url",
+                "The Witcher 3",
+                "CDPR",
+                "CD Projekt",
+                LocalDate.now(),
+                5,
+                "note"
+        );
+
+        PagedUserGameResponse pageOfGames = new PagedUserGameResponse(Collections.singletonList(response), false, true);
+
+        when(userGameService.getUserGameResponse(null, null, null, 0, 9)).thenReturn(pageOfGames);
+
         mockMvc.perform(get("/user-games"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("userGames"))
+                .andExpect(model().attribute("hasPrevious", false))
+                .andExpect(model().attribute("hasNext", true));
     }
+
 
     @Test
     public void deleteUserGame_EndpointExists_ShouldReturnOk() throws Exception {
