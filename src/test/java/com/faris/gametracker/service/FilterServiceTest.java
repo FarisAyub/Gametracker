@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FilterServiceTest {
 
-    private FilterService filterService = new FilterService();
+    private final FilterService filterService = new FilterService();
 
     private List<UserGame> userGames;
     private List<Game> games;
@@ -68,7 +68,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void filterByInList_NullfilterList_ShouldReturnOriginalList() {
+    public void filterByInList_NullFilterList_ShouldReturnOriginalList() {
 
         List<Game> filtered = filterService.filterByInList(games, null, userGameIds);
 
@@ -104,7 +104,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortGames_ShouldfilterSortTitle() {
+    public void sortGames_ShouldFilterSortTitle() {
         String filterSort = "title";
 
         List<Game> sorted = filterService.filterSort(games, filterSort);
@@ -116,7 +116,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortGames_ShouldfilterSortReleaseDate() {
+    public void sortGames_ShouldFilterSortReleaseDate() {
         String filterSort = "releaseDate";
 
         List<Game> sorted = filterService.filterSort(games, filterSort);
@@ -127,7 +127,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortGames_BlankfilterSort_ShouldReturnOriginalList() {
+    public void sortGames_BlankFilterSort_ShouldReturnOriginalList() {
         String filterSort = "";
 
         List<Game> sorted = filterService.filterSort(games, filterSort);
@@ -165,7 +165,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortUserGames_ShouldfilterSortTitle() {
+    public void sortUserGames_ShouldFilterSortTitle() {
         List<UserGame> sorted = filterService.filterSort(userGames, "title");
         assertEquals("Elden Ring", sorted.get(0).getGame().getTitle());
         assertEquals("The Witcher 3", sorted.get(1).getGame().getTitle());
@@ -173,7 +173,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortUserGames_ShouldfilterSortReleaseDate() {
+    public void sortUserGames_ShouldFilterSortReleaseDate() {
         List<UserGame> sorted = filterService.filterSort(userGames, "releaseDate");
         assertEquals("The Witcher 3", sorted.get(0).getGame().getTitle());
         assertEquals("Valheim", sorted.get(1).getGame().getTitle());
@@ -181,7 +181,7 @@ public class FilterServiceTest {
     }
 
     @Test
-    public void sortUserGames_ShouldfilterSortRating() {
+    public void sortUserGames_ShouldFilterSortRating() {
         List<UserGame> sorted = filterService.filterSort(userGames, "rating");
         assertEquals(5, sorted.get(0).getRating());
         assertEquals(4, sorted.get(1).getRating());

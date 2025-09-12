@@ -2,10 +2,6 @@ package com.faris.gametracker.controller;
 
 import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.model.Game;
-import com.faris.gametracker.repository.GameRepository;
-import com.faris.gametracker.repository.UserGameRepository;
-import com.faris.gametracker.service.FilterService;
-import com.faris.gametracker.service.GameApiService;
 import com.faris.gametracker.service.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,18 +22,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class GameControllerTest {
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private GameApiService gameApiService;
-
-    @MockBean
-    private GameRepository gameRepository;
-
-    @MockBean
-    private UserGameRepository userGameRepository;
-
-    @MockBean
-    private FilterService filterService;
 
     @MockBean
     private GameService gameService;

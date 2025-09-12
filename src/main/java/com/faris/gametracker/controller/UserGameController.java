@@ -20,17 +20,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user-games")
 public class UserGameController {
 
-    private final UserGameRepository userGameRepository;
-    private final GameRepository gameRepository;
     private final UserGameService userGameService;
-    private final FilterService filterService;
 
     @Autowired
-    public UserGameController(UserGameRepository userGameRepository, GameRepository gameRepository, UserGameService userGameService,  FilterService filterService) {
-        this.userGameRepository = userGameRepository;
-        this.gameRepository = gameRepository;
+    public UserGameController(UserGameService userGameService) {
         this.userGameService = userGameService;
-        this.filterService = filterService;
     }
 
     /**

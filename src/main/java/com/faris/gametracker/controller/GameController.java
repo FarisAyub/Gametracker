@@ -17,17 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/games")
 public class GameController {
 
-    private final GameRepository gameRepository;
-    private final UserGameRepository userGameRepository;
-    private final GameApiService gameApiService;
-    private final FilterService filterService;
     private final GameService gameService;
 
-    public GameController(GameRepository gameRepository, UserGameRepository userGameRepository, GameApiService gameApiService, FilterService filterService, GameService gameService) {
-        this.gameRepository = gameRepository;
-        this.userGameRepository = userGameRepository;
-        this.gameApiService = gameApiService;
-        this.filterService = filterService;
+    public GameController(GameService gameService) {
         this.gameService = gameService;
     }
 

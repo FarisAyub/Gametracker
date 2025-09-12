@@ -3,10 +3,6 @@ package com.faris.gametracker.controller;
 import com.faris.gametracker.dto.PageResponse;
 import com.faris.gametracker.dto.UserGameRequest;
 import com.faris.gametracker.dto.UserGameResponse;
-import com.faris.gametracker.repository.GameRepository;
-import com.faris.gametracker.repository.UserGameRepository;
-import com.faris.gametracker.service.FilterService;
-import com.faris.gametracker.service.GameApiService;
 import com.faris.gametracker.service.UserGameService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,21 +27,8 @@ public class UserGameControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private GameApiService gameApiService;
-
-    @MockBean
-    private GameRepository gameRepository;
-
-    @MockBean
-    private UserGameRepository userGameRepository;
-
-    @MockBean
-    private FilterService filterService;
-
-    @MockBean
     private UserGameService userGameService;
 
-    private UserGameRequest validRequest;
     private UserGameRequest invalidRequest;
 
     @Autowired
@@ -53,11 +36,6 @@ public class UserGameControllerTest {
 
     @BeforeEach
     public void setup() {
-        validRequest = new UserGameRequest();
-        validRequest.setGameId(1L);
-        validRequest.setRating(5);
-        validRequest.setNote("Test note");
-
         invalidRequest = new UserGameRequest();
         invalidRequest.setGameId(1L);
         invalidRequest.setRating(6); // invalid rating
