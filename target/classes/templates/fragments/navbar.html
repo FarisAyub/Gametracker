@@ -1,13 +1,13 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar(page)">
     <div class="container">
-        <a class="navbar-brand" th:href="@{./}">Home</a>
+        <a class="navbar-brand" th:classappend="${page=='index' ? 'active' : ''}" th:href="@{./}">Home</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/games}">All Games</a>
+                    <a class="nav-link" th:classappend="${page=='games' ? 'active' : ''}" th:href="@{/games}">All Games</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/user-games}">My Games</a>
+                    <a class="nav-link" th:classappend="${page=='user-games' ? 'active' : ''}" th:href="@{/user-games}">My Games</a>
                 </li>
             </ul>
         </div>
