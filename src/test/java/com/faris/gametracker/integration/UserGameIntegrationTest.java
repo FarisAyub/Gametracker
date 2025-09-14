@@ -337,7 +337,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_filterSortTitle_ShouldReturnSortedResults() throws Exception {
+    public void userGamesPage_FilterSortTitle_ShouldReturnSortedResults() throws Exception {
         String filterSort = "title";
 
         mockMvc.perform(get("/user-games").param("filterSort", filterSort))
@@ -357,7 +357,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_filterSortReleaseDate_ShouldReturnSortedResults() throws Exception {
+    public void userGamesPage_FilterSortReleaseDate_ShouldReturnSortedResults() throws Exception {
         String filterSort = "releaseDate";
 
         mockMvc.perform(get("/user-games").param("filterSort", filterSort))
@@ -377,7 +377,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_filterSortRating_ShouldReturnSortedResults() throws Exception {
+    public void userGamesPage_FilterSortRating_ShouldReturnSortedResults() throws Exception {
         String filterSort = "rating";
 
         mockMvc.perform(get("/user-games").param("filterSort", filterSort))
@@ -397,7 +397,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_InvalidfilterSort_ShouldReturnUnsorted() throws Exception {
+    public void userGamesPage_InvalidFilterSort_ShouldReturnUnsorted() throws Exception {
         String filterSort = "invalidSortType";
 
         mockMvc.perform(get("/user-games").param("filterSort", filterSort))
@@ -446,7 +446,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SearchAndfilterRating_ShouldReturnFilteredResults() throws Exception {
+    public void userGamesPage_SearchAndFilterRating_ShouldReturnFilteredResults() throws Exception {
         String filterSearch = "2"; // Only matches "title 2"
         Integer filterRating = 1; // Matches "title 1" and "title 2"
 
@@ -489,7 +489,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_filterRatingAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
+    public void userGamesPage_FilterRatingAndSort_ShouldReturnFilteredAndSortedResults() throws Exception {
         String filterSort = "title";
         Integer filterRating = 1; // Matches "Title 1" and "Title 2"
 
@@ -511,7 +511,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SearchSortAndfilterRating_ShouldReturnFilteredAndSortedResults() throws Exception {
+    public void userGamesPage_SearchSortAndFilterRating_ShouldReturnFilteredAndSortedResults() throws Exception {
         UserGame add = new UserGame();
         add.setGame(games.get(5));
         add.setNote("game 3");
@@ -542,7 +542,7 @@ public class UserGameIntegrationTest {
     }
 
     @Test
-    public void userGamesPage_SearchSortAndfilterRating_EmptyResults_ShouldReturnEmpty() throws Exception {
+    public void userGamesPage_SearchSortAndFilterRating_EmptyResults_ShouldReturnEmpty() throws Exception {
         String filterSearch = "witcher"; // Matches "Witcher 3"
         String filterSort = "title";
         Integer filterRating = 2; // No games contain witcher that have a rating of 2

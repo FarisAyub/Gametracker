@@ -1,12 +1,10 @@
 package com.faris.gametracker.repository;
 
 import com.faris.gametracker.model.Game;
-import com.faris.gametracker.service.GameApiService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -20,9 +18,6 @@ public class GameRepositoryTest {
 
     @Autowired
     private GameRepository gameRepository;
-
-    @MockBean
-    private GameApiService gameApiService;
 
     private Game game;
 

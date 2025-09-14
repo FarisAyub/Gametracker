@@ -1,11 +1,9 @@
 package com.faris.gametracker.repository;
 
 import com.faris.gametracker.model.UserGame;
-import com.faris.gametracker.service.GameApiService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,9 +13,6 @@ public class UserGameRepositoryTest {
 
     @Autowired
     private UserGameRepository userGameRepository;
-
-    @MockBean
-    private GameApiService gameApiService;
 
     @Test
     public void existsByGameId_Exists_ShouldReturnTrue() {
